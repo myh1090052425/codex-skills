@@ -4,6 +4,3 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
-
-# Local Codex recovery state; not part of the published Skill.
-docs/state/

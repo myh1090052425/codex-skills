@@ -30,6 +30,12 @@ software-evolution-agent/
 
 `software-evolution/` 本身就是完整 Skill 目录，可以单独复制、软链接或被其他 Skill/Plugin 仓库引用。
 
+## 文档
+
+- [安装与使用](docs/USAGE.md)
+- [治理模型与安全设计](docs/DESIGN.md)
+- [开发与验证](docs/DEVELOPMENT.md)
+
 ## 安装
 
 克隆仓库后执行：
