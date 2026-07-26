@@ -26,7 +26,7 @@ python3 install.py --target ~/.agents/skills/software-evolution
 $software-evolution
 ```
 
-默认进入 `autopilot`。控制面不存在时自动创建；若当前分支只有一个明确因预算记账而停止的 `partial` Run，则先验证漂移并自动接管。一个 Budget Window 到限后会在同一次调用中完成验证、封账、重置窗口计数并继续；**不会要求用户再执行 `init → audit → govern`，也不会为普通窗口滚动要求 `resume`。**
+默认进入 `autopilot`。控制面不存在时自动创建；若当前分支只有一个明确、非活跃且可安全恢复的 `partial` Run，则先验证漂移并自动接管。每个语义完整的修复批次完成验证和 Checkpoint 后会在同一次调用中继续下一项安全工作；**不会要求用户再执行 `init → audit → govern`，也不会因为文件、Finding、Cycle 或 Batch 数量要求 `resume`。**
 
 ```text
 .software-evolution.yml
@@ -47,7 +47,7 @@ docs/software-evolution/
 $software-evolution overnight
 ```
 
-它使用有限的时间、循环、批次、文件和验证预算持续执行，遇到需要决定或批准的项目会记录并跳过，继续其他安全工作。也可以在 `/skills` 中选择 **AI Software Evolution Agent**。`/software-evolution ...` 在宿主作为普通文本传递时与 `$software-evolution ...` 等价。
+它在宿主任务保持可用且仍有安全、可完整验证的工作时持续执行。文件数、Finding 数、Cycle、Batch 数和耗时只作遥测，不会触发停工；需要决定或批准的项目会被记录并跳过，Agent 继续其他独立安全工作。也可以在 `/skills` 中选择 **AI Software Evolution Agent**。`/software-evolution ...` 在宿主作为普通文本传递时与 `$software-evolution ...` 等价。
 
 ## 3. 模式选择
 
@@ -59,7 +59,7 @@ $software-evolution autopilot
 $software-evolution autopilot src/orders
 ```
 
-零前置启动：缺少控制面时自动初始化，旧版配置先合并为 `effective_config`，然后循环执行建模、发现、证明、优先级、修复、测试、验证、复扫和记忆更新。单个 Window 到限只是内部安全检查点；只要 Session 硬上限仍允许，就在同一次调用中继续下一 Window。
+零前置启动：缺少控制面时自动初始化，配置先合并为 `effective_config`，然后循环执行建模、发现、证明、优先级、修复、测试、验证、复扫和记忆更新。每批按根因、业务能力、不变量、契约边界或兼容阶段划分；Checkpoint 用于恢复和审计，不是暂停点。只要仍有安全且可完整验证的工作，就在同一次调用中继续。
 
 ### `overnight [scope]`：睡后编程
 
@@ -68,9 +68,9 @@ $software-evolution overnight
 $software-evolution overnight services/payment
 ```
 
-使用 `overnight_budget`、隔离 worktree 优先策略、`RUN-*` 账本和最终验证预留执行长时间无人值守治理。不会等待常规确认；需要业务权威、生产操作、远端发布或 R3/R4 变更时记录并跳过。
+使用隔离 worktree 优先策略和 `RUN-*` 账本执行长时间无人值守治理。不会等待常规确认，也不会按文件数、Cycle 或 Batch 数停工；需要业务权威、生产操作、远端发布或 R3/R4 变更时记录并跳过，继续其他独立安全工作。
 
-本地 Scheduled Task 运行期间需要电脑保持开机且 Codex/ChatGPT 桌面应用保持运行。建议先人工观察前几次运行，再逐步放大预算。
+本地 Scheduled Task 运行期间需要电脑保持开机且 Codex/ChatGPT 桌面应用保持运行。宿主结束属于真实中断；下一次普通调用或显式 `resume <id>` 会基于 Checkpoint 和 Drift 继续，而不是重置人工配额。
 
 ### `init`：建立系统认知
 
@@ -115,7 +115,7 @@ $software-evolution repair DEBT-007
 $software-evolution repair DEC-003
 ```
 
-只修复已证明、已决策或 Ready 的问题。流程包括复现、调用链、风险/预算、最小根因修改、回归测试、分层验证、能力/架构复扫和记忆更新。
+只修复已证明、已决策或 Ready 的问题。流程包括复现、调用链、风险与受保护边界、最小根因修改、回归测试、分层验证、能力/架构复扫和记忆更新。
 
 ### `verify [target/id]`：独立验收
 
@@ -129,14 +129,14 @@ $software-evolution verify BATCH-021
 
 Verdict：`VERIFIED`、`PARTIAL`、`FAILED`、`BLOCKED`、`UNKNOWN`。
 
-### `deep [scope]`：预算化深度治理
+### `deep [scope]`：连续深度治理
 
 ```text
 $software-evolution deep
 $software-evolution deep services/payment
 ```
 
-先声明覆盖清单和预算，再分片检查 UX、工程可靠性、业务能力/规则、架构、数据库、发布、观测和技术债。预算至少包括：范围项、Finding 数、修复批次、变更文件数和验证预留。输出应说“当前切片完成”，除非真的覆盖了全部声明范围。
+先声明目标范围、关键流程、能力/规则、不变量和覆盖证据，再分片检查 UX、工程可靠性、业务能力/规则、架构、数据库、发布、观测和技术债。修复波次按语义边界组织并完成风险所需验证；范围项、Finding、批次和文件数只作覆盖遥测。输出应说“当前切片完成”，除非真的覆盖了全部声明范围。
 
 ### `release-check [target]`：发布门禁
 
@@ -158,14 +158,14 @@ $software-evolution observe order-worker --record
 
 将关键流程映射到 SLI/SLO、日志、指标、Trace、告警、队列/数据库和用户反馈，识别静默失败、误报成功和告警盲区。生产默认只读；不会修改告警、Dashboard、Flag、配置或数据。
 
-### `resume [RUN/BATCH/id]`：恢复真实中断、漂移或指定运行/批次
+### `resume [RUN/BATCH/id]`：恢复漂移、歧义或指定运行/批次
 
 ```text
 $software-evolution resume RUN-20260726-01
 $software-evolution resume BATCH-021
 ```
 
-普通 Window 滚动不使用本模式。仅在 Host 中断、漂移、多个候选 Run 产生歧义，或用户明确指定 RUN/BATCH 时，读取 Checkpoint 并比较 branch、HEAD、worktree fingerprint 和 scope paths：
+普通批次 Checkpoint 会自动继续，不使用本模式；唯一且 Drift-safe 的宿主中断 Run 也可由下一次普通 `$software-evolution` 自动接管。仅在中断无法安全自动接管、发生漂移、多个候选 Run 产生歧义，或用户明确指定 RUN/BATCH 时，读取 Checkpoint 并比较 branch、HEAD、worktree fingerprint 和 scope paths：
 
 - `NO_DRIFT`：重验最后门禁后继续。
 - `SAFE_DRIFT`：仅有范围外未跟踪文件，人工确认后继续。
@@ -192,9 +192,7 @@ Scope 可以是：文件、目录、模块、页面、业务流程、Capability�
 
 ## 5. 项目配置
 
-`autopilot` 定义整次调用的 Session 硬上限；`budget` 定义可自动滚动的普通 Window；`overnight_budget` 定义长时运行的整体上限。所有执行必须使用 Validator 输出的 `effective_config`。
-
-`.software-evolution.yml` 使用受限 YAML（仅 Mapping + Scalar），可控制：
+所有执行必须使用 Validator 输出的 `effective_config`。`.software-evolution.yml` 使用受限 YAML（仅 Mapping + Scalar），控制风险、写入边界、连续执行、逐批 Checkpoint、只读记录、发布、观察、专业路由和架构适应度：
 
 ```yaml
 version: 1
@@ -205,21 +203,32 @@ autonomy:
   allow_product_writes: true
 
 autopilot:
-  max_runtime_minutes: 240
-  max_cycles: 8
-  max_budget_windows: 4
-  max_total_files_changed: 48
-  max_consecutive_failed_batches: 2
+  continue_until_no_safe_work: true
   checkpoint_every_batch: true
-  continue_after_budget_checkpoint: true
 
-budget:
-  max_scope_items: 60
-  max_findings: 12
-  max_repair_batches: 2
-  max_files_changed: 12
-  max_governance_files_changed: 24
-  reserve_verification_minutes: 15
+readonly:
+  allow_record_persistence: true
+
+release:
+  require_required_checks: true
+  require_rollback_plan: true
+  require_mixed_version_check: true
+
+observe:
+  production_read_only: true
+  default_window_minutes: 30
+
+specialist_routing:
+  security: auto
+  supply_chain: auto
+  data: auto
+  performance_cost: auto
+  ux: auto
+  database: auto
+  ci_cd: auto
+
+fitness:
+  enforce_registered_checks: true
 ```
 
 完整模板位于 `software-evolution/memory/software-evolution.config.template.yml`。验证：
@@ -229,7 +238,16 @@ python3 <skill-root>/scripts/validate_project_config.py \
   --config .software-evolution.yml --json
 ```
 
-JSON 输出同时包含原始 `config`、合并默认值后的 `effective_config` 和 `defaulted_paths`。Governance 文件不占 `max_files_changed`；验证预留是墙钟时间底线，不会因为运行了测试就记成余额 0。默认 `continue_after_budget_checkpoint: true`；只有项目显式改为 `false` 时，完成验证的 Window 才作为配置型暂停点。另一个活跃 invocation owner 的 branch/scope 是并发边界，Agent 不会接管或创建重叠 Run。配置拒绝重复键、未知键、非标准布尔值、敏感键和复杂 YAML 特性。`readonly.allow_record_persistence` 只能允许显式 `--record` 写治理报告/决策包，不能自动写入。`observe.production_read_only` 必须为 `true`。即使 `max_risk: R4`，R4 操作仍必须获得显式批准。
+JSON 输出同时包含原始 `config`、合并默认值后的 `effective_config`、`defaulted_paths` 和 `deprecated_paths`。旧 `budget`、`deep_budget`、`overnight_budget` 以及旧 `autopilot.max_*` 数量/时间配额仍可解析，避免既有项目配置突然失效，但会从 `effective_config` 中剥离并列入 `deprecated_paths`；Agent 必须忽略，不能把它们恢复成停工条件。配置拒绝重复键、未知键、非标准布尔值、敏感键和复杂 YAML 特性。`autopilot.continue_until_no_safe_work` 与 `checkpoint_every_batch` 必须为 `true`；`readonly.allow_record_persistence` 只能允许显式 `--record` 写治理报告/决策包；`observe.production_read_only` 必须为 `true`。即使 `max_risk: R4`，R4 操作仍必须获得显式批准。
+
+### 连续执行、遥测与真实停止条件
+
+- 一个批次由一个根因、业务能力、不变量、契约边界或兼容阶段定义，不按文件数量机械拆分。
+- 文件数、Diff 大小、Finding 数、Cycle、Batch 数和耗时只作 Blast Radius、审计、趋势和恢复遥测。
+- 大范围修复必须有更强的调用方分析、回滚方案和验证证据，但不会仅因文件多而失去授权。
+- 真实停止条件只有：无安全可修问题；剩余项缺业务权威、审批、证据、环境或专项能力；涉及受保护外部操作/R3/R4 决策；冲突漂移；所有候选假设均被隔离；或宿主中断、挂起、限流、结束任务。
+- 同一修复假设连续失败三次时只隔离该假设，Agent 继续处理其他独立安全工作。
+- 另一个活跃 invocation owner 的 branch/scope 是并发边界，Agent 不会接管或创建重叠 Run。
 
 ## 6. 业务能力复用门禁
 

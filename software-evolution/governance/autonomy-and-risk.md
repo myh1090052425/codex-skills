@@ -8,7 +8,7 @@ Autonomy completes safe work; it does not create missing authority. Both the sel
 |---|---|---|---|
 | R0 — observational | Read-only analysis, discovery, report, memory proposal | Execute within mode | Source/runtime evidence and coverage limits |
 | R1 — low | Local bug, missing state/test, isolated duplication, deterministic error handling, bounded query improvement | Repair autonomously in writable mode | Regression test plus relevant static/module checks |
-| R2 — medium | Shared component/service refactor, internal contract consolidation, retry/transaction/concurrency/performance change | Plan and repair only when impact, rollback, callers, and budget are bounded | Targeted tests, affected integration/build/runtime checks, caller review |
+| R2 — medium | Shared component/service refactor, internal contract consolidation, retry/transaction/concurrency/performance change | Plan and repair only when impact, rollback, callers, and verification are bounded | Targeted tests, affected integration/build/runtime checks, caller review |
 | R3 — high | Data model/migration, permission model, core semantics, public API/event schema, cross-service protocol | Decision/staged compatibility plan first; only reversible compatible phases when explicitly in scope | Old/transitional/final contract tests, migration/release/rollback evidence |
 | R4 — protected | Production mutation, deployment/rollback, destructive cleanup, credential/access change, irreversible data, force push/history rewrite | Explicit approval at action time | Operation-specific preconditions, rollback/stop plan, post-action evidence |
 
@@ -17,7 +17,7 @@ Autonomy completes safe work; it does not create missing authority. Both the sel
 - `audit`, `verify`, `release-check`, and `observe` remain read-only for every risk class.
 - `init` may create only missing control-plane files/directories.
 - `govern` and `repair` may execute R1 and bounded R2 work up to configured `autonomy.max_risk`.
-- `deep` may execute the same classes only inside declared repair-wave and file budgets.
+- `deep` may execute the same classes only inside the declared scope and coherent, fully verifiable repair waves.
 - R3 execution requires an explicit target/approved decision and a reversible compatible phase; planning alone does not authorize a write.
 - `resume` inherits the proven original gate. Unknown or drifted origin falls back to read-only.
 
@@ -29,7 +29,7 @@ All must be true:
 - Expected outcome and business authority are unambiguous.
 - Affected callers, contracts, data, permissions, and release implications are known.
 - Change is reversible and preserves external compatibility or follows an approved staged transition.
-- Required tests/runtime checks are available and fit the remaining budget.
+- Required tests/runtime checks are available and can cover the complete declared change.
 - User-owned changes and protected boundaries are isolated.
 - No production/external mutation is implied.
 
@@ -58,4 +58,4 @@ Before:
 
 ## Existing changes and repeated failure
 
-Treat uncommitted files as potentially user-owned. Preserve unrelated hunks and never use destructive reset/clean/checkout operations. Stop the same repair hypothesis after three failed attempts; summarize evidence, question the model, and re-plan before another edit.
+Treat uncommitted files as potentially user-owned. Preserve unrelated hunks and never use destructive reset/clean/checkout operations. After three failed attempts, quarantine that repair hypothesis, summarize evidence, question the model, and re-plan it before another edit. Continue other independent safe work; one exhausted hypothesis does not end the whole governance run.

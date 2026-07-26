@@ -162,19 +162,26 @@ class RepositoryTests(unittest.TestCase):
         match = re.search(r"<!--\s*software-evolution-run\s*(\{.*?\})\s*-->", template, re.DOTALL)
         self.assertIsNotNone(match)
         metadata = json.loads(match.group(1))
-        self.assertEqual(1, metadata["schema_version"])
+        self.assertEqual(2, metadata["schema_version"])
         self.assertEqual("RUN-TBD", metadata["run_id"])
         self.assertIn("latest_batch_id", metadata)
-        self.assertEqual(1, metadata["window_index"])
+        self.assertNotIn("window_index", metadata)
         self.assertIn("predecessor_run_id", metadata)
         self.assertEqual("INV-TBD", metadata["invocation_id"])
-        self.assertEqual("ISO-8601-TBD", metadata["session_deadline"])
+        self.assertEqual("", metadata["host_deadline"])
         self.assertEqual("ISO-8601-TBD", metadata["last_heartbeat_at"])
-        for heading in ("## Session hard budget", "## Current Window budget", "## Window ledger"):
+        for heading in (
+            "## Continuity state",
+            "## Execution metrics",
+            "## Checkpoint ledger",
+        ):
             self.assertIn(heading, template)
-        self.assertIn("Implementation files", template)
-        self.assertIn("Governance files", template)
-        self.assertIn("Verification floor minutes", template)
+        self.assertIn("Counts are telemetry only", template)
+        self.assertIn("Implementation paths touched", template)
+        self.assertIn("Governance paths touched", template)
+        self.assertIn("Legacy quota caused this stop: `must be no`", template)
+        self.assertNotIn("Session hard budget", template)
+        self.assertNotIn("Verification floor minutes", template)
 
     def test_skill_integrity_script(self) -> None:
         result = subprocess.run(

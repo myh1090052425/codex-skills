@@ -69,7 +69,7 @@ Every `ready` item needs root cause, evidence/scope, impact, remediation, compat
 ## Decisions and checkpoints
 
 - Decision records preserve authority, options, consequences, approval scope, and supersession.
-- Batch checkpoints preserve target identity, mode, drift metadata, budget, verification, approvals, and next safe action.
+- Batch checkpoints preserve target identity, mode, drift metadata, change telemetry, verification, approvals, and next safe action.
 - Reports preserve detailed evidence without bloating architecture memory.
 
 ## Concurrent updates

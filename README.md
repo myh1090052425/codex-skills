@@ -47,14 +47,14 @@ $software-evolution
 → 建立系统与业务认知
 → 发现并证明问题
 → 判断优先级
-→ 选择安全修复批次
+→ 选择语义完整的安全修复批次
 → 修改代码
 → 补充测试
 → 自动验证
 → 重扫调用方、能力、规则与架构
-→ 当前 Budget Window 封账并自动开启下一 Window
-→ 在同一次调用中继续下一批
-→ 仅在 Session 硬上限或真实阻塞时保存终态
+→ 写入可恢复 Checkpoint
+→ 只要仍有安全、可完整验证的工作，就在同一次调用中继续
+→ 仅在真实停止条件或宿主中断时保存终态
 ```
 
 需要更长的无人值守“睡后编程”窗口时：
@@ -86,19 +86,19 @@ $software-evolution resume [RUN/BATCH/id]
 
 | 模式 | 目标 | 默认写入行为 |
 |---|---|---|
-| `autopilot`（无参数默认） | 自动初始化/接管预算型未完 Run，并跨 Window 持续治理 | Session 预算内多批 R1/R2 自动修复 |
-| `overnight` | 长时间无人值守治理 | 时间、循环、批次、文件和验证预算内执行 |
+| `autopilot`（无参数默认） | 自动初始化/安全接管未完 Run，并持续治理到没有安全可验证工作 | 连续执行语义完整的 R1/R2 修复批次 |
+| `overnight` | 在宿主可用期间执行长时间无人值守治理 | 连续 R1/R2 修复；数量只作遥测 |
 | `init` | 只建立控制面、系统模型、能力地图和基线 | 仅创建/更新治理文件，不改产品 |
 | `audit` | 只读证明问题、分级、形成修复/决策输入 | 不修改；`--record` 才持久化报告 |
 | `govern` | 手工选择范围的日常治理 | 小批次 R1/R2 自动修复 |
 | `repair` | 定向修复已证明问题 | 目标化修改、补测试、验证 |
 | `verify` | 独立验收改动、PR、分支或债务关闭 | 不修改；失败交回 repair |
-| `deep` | 分片式深度治理 | 受范围、批次、文件和验证预算限制 |
+| `deep` | 分片式深度治理与能力收敛 | 在声明范围内连续执行可完整验证的修复波次 |
 | `release-check` | 发布、迁移、混合版本、回滚就绪检查 | 严格只读，不部署 |
 | `observe` | 用日志、指标、Trace、告警和反馈校正治理 | 生产只读，不改告警/配置/数据 |
 | `resume` | 恢复真实中断、漂移、歧义或指定 `RUN-*`/`BATCH-*` | 继承原模式；无法证明时降级只读 |
 
-`init`、`audit`、`govern`、`repair` 是高级控制面，不是默认命令的前置步骤。普通预算窗口滚动也不需要 `resume`；只读模式不会因为发现“明显问题”而偷偷修改代码。
+`init`、`audit`、`govern`、`repair` 是高级控制面，不是默认命令的前置步骤。普通批次 Checkpoint 会自动继续，不需要 `resume`；只读模式不会因为发现“明显问题”而偷偷修改代码。
 
 ## 治理闭环
 
@@ -115,11 +115,11 @@ Orient → Model → Scope → Inspect → Prove → Prioritize → Decide
 可写模式 → Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint
 ```
 
-可写模式会在风险、授权、预算和验证条件满足时自主完成低风险修复；`autopilot` 在一个 Window 到限后先验证和封账，再重置 Window 计数并在同一次调用中继续。治理记忆文件单独记账，不占产品实现文件额度。不具备完整证据时形成 Finding、Decision、Specialist Handoff 或 Checkpoint，并继续其他独立安全工作。
+可写模式会在风险、业务权威、可逆性和验证条件满足时自主完成修复。一个批次按根因、业务能力、不变量、契约边界或兼容阶段划分，而不是按文件数量划分；文件数、Finding 数、批次数和耗时只作遥测。每批验证并写入 Checkpoint 后，只要还有独立的安全可验证工作就继续。不具备完整证据时形成 Finding、Decision、Specialist Handoff 或 Blocked Checkpoint，并继续其他独立安全工作。
 
 ## 睡后编程与无人值守边界
 
-`overnight` 使用独立 `RUN-*` 账本、较长预算和最终验证预留。它优先在隔离 worktree 中运行；遇到业务决策、凭证、环境或高风险问题时记录并跳过，继续其他安全任务，不会一直等用户回复。
+`overnight` 使用独立 `RUN-*` 账本并优先在隔离 worktree 中运行，在宿主任务仍可用且存在安全可验证工作时持续推进。它不会因为文件数、Cycle、Finding 或 Batch 数达到阈值停工；遇到业务决策、凭证、环境或高风险问题时记录并跳过，继续其他独立安全任务，不会一直等用户回复。
 
 无人值守授权不包括部署、生产迁移/数据修复、Flag/告警/权限/凭证、远端发布、Force Push、历史重写或 R3/R4 契约变更。实际使用本地 Scheduled Tasks 时，电脑需要保持开机且 Codex/ChatGPT 桌面应用保持运行。
 
@@ -147,17 +147,18 @@ docs/software-evolution/
 
 稳定 ID：`CAP-*`、`FIND-*`、`DEBT-*`、`DEC-*`、`BATCH-*`、`RUN-*`、`VER-*`、`REL-*`、`FIT-*`。
 
-`.software-evolution.yml` 控制最大风险等级、Session 硬上限、Budget Window、Finding、修复批次、Implementation/Governance 文件额度、验证时间底线、只读报告持久化、发布门禁、观察窗口、专业路由和架构适应度检查。旧版部分配置会与内置模板合并为确定性的 `effective_config`，不会再由 Agent 临时发明 90 分钟或更小额度。配置只能缩小自治权限，不能绕过平台、仓库或生产安全规则。
+`.software-evolution.yml` 控制最大风险等级、是否允许产品代码写入、连续执行与逐批 Checkpoint、只读报告持久化、发布门禁、观察窗口、专业路由和架构适应度检查。所有执行都使用 Validator 输出的 `effective_config`。
 
-预算采用双层、双账本：
+连续自治采用语义批次和可恢复 Checkpoint：
 
-- Session 硬上限控制整次调用的运行时间、Cycle、Window 数和总 Implementation 文件数。
-- Window 额度控制单个安全批次窗口；到限后验证、封账并在同一次调用中继续。
-- Governance 文件只进入 `max_governance_files_changed`，不消耗 `max_files_changed`。
-- `reserve_verification_minutes` 是剩余墙钟时间底线，不是执行验证后归零的一次性余额。
-- 下一次普通 `$software-evolution` 可自动接管唯一、明确的 budget-only `partial`；显式 `resume` 只用于真实中断、漂移、歧义或指定恢复。
+- 一个批次由一个根因、业务能力、不变量、契约边界或兼容阶段定义；一个合理修复可以影响一个或数百个文件。
+- 文件数、Diff 大小、Finding 数、Cycle、Batch 数和耗时只作 Blast Radius、审计、趋势和恢复遥测，绝不是授权或停止条件。
+- 每个批次都必须完成风险所需验证并记录 `BATCH-*`；普通 Checkpoint 后自动选择下一项工作。
+- 旧 `budget`、`deep_budget`、`overnight_budget` 和旧 `autopilot.max_*` 配额键仍可被 Validator 解析，便于老项目升级，但会从 `effective_config` 中剥离并列入 `deprecated_paths`，Agent 必须忽略。
 - 另一个仍活跃的 invocation owner 是并发边界；默认命令不会接管它，也不会创建范围重叠的新 Run。
-- 只有项目显式设置 `continue_after_budget_checkpoint: false` 时，Window 封账才作为配置型暂停点。
+- 下一次普通 `$software-evolution` 可在 Drift、权威和最后门禁校验后自动接管唯一、明确的宿主中断或旧配额型 `partial`；显式 `resume` 只用于无法自动接管的中断、漂移、歧义或指定恢复。
+
+真实停止条件只有：重扫后没有可修复问题；剩余工作全部缺业务权威、审批、证据、环境或专项能力；需要受保护外部操作或 R3/R4 决策；并行漂移使候选工作不安全；同一假设失败三次后该假设被隔离且没有其他安全工作；或宿主中断、挂起、限流、结束任务。
 
 ## 三个核心治理方向
 

@@ -1,20 +1,19 @@
 # Deep Mode
 
-`WRITE POLICY: BUDGETED_WRITE`
+`WRITE POLICY: CONTINUOUS_WRITE`
 
-Perform sliced repository-wide governance without turning one run into an unbounded rewrite.
+Perform repository-wide or scoped deep governance through coherent, verified repair waves. Do not turn breadth into an arbitrary file/finding/batch quota.
 
-## Budget contract
+## Coverage contract
 
 Before scanning, declare:
 
-- Scope worklist and exclusions.
-- Maximum scope items and validated findings.
-- Maximum repair waves and files changed.
-- Verification reserve that cannot be consumed by discovery or editing.
-- Areas explicitly deferred to a later batch.
+- Scope worklist and explicit exclusions.
+- Critical business flows, capability boundaries, runtime units, and evidence sources.
+- Verification strategy for each repair class.
+- Areas blocked by authority, environment, specialist capability, or protected operations.
 
-Use `.software-evolution.yml` when valid. If absent, choose conservative explicit limits. Never claim repository-wide completion when only a slice was reviewed.
+Never claim repository-wide completion when only a slice was reviewed. Continue to the next uncovered slice while safe verifiable work remains and the host is available.
 
 ## Stages
 
@@ -36,12 +35,12 @@ Cluster implementations by business effect. Detect duplicate capabilities and di
 
 ### 5. Prioritize and repair waves
 
-Create a ranked finding/debt set. Prefer enabling repairs such as characterization tests, telemetry, seams, and compatibility adapters. Execute only small waves whose full verification fits the remaining budget. Defer broad migrations and contract breaks into `DEC-*`/`DEBT-*` plans.
+Create a ranked finding/debt set. Prefer enabling repairs such as characterization tests, telemetry, seams, and compatibility adapters. Execute coherent waves whose full verification is available. Defer unresolved business semantics, destructive migrations, external writes, and R3/R4 contract changes into `DEC-*`/`DEBT-*` plans—not because of file count.
 
-### 6. Re-scan and checkpoint
+### 6. Re-scan, checkpoint, and continue
 
-After each wave, re-run affected inspections, update coverage and memory, and write a `BATCH-*` checkpoint using [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). Stop before the next wave if verification reserve, file limit, evidence, environment, authority, or safety is insufficient.
+After each wave, re-run affected inspections, update coverage and memory, and write a `BATCH-*` checkpoint using [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). Record counts as coverage telemetry. Continue to the next safe slice until coverage is complete, only blocked work remains, or the host ends the task.
 
 ## Completion language
 
-Report with [../templates/governance-report.md](../templates/governance-report.md). Say `slice complete`, not `repository clean`, unless every declared repository-wide surface was actually covered with trustworthy evidence. Persist the next worklist slice for `resume`.
+Report with [../templates/governance-report.md](../templates/governance-report.md). Say `slice complete`, not `repository clean`, unless every declared repository-wide surface was covered with trustworthy evidence. Persist the next worklist slice when host interruption prevents completion.

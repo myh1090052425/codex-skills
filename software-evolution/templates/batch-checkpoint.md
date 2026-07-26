@@ -24,34 +24,35 @@
 - User/business outcome: `TBD`
 - Root cause/finding/debt/decision IDs: `TBD`
 - Expected behavior and authority: `TBD`
+- Coherent semantic boundary: `TBD`
 
-## Session and Window budget
+## Change metrics
 
-- Parent Run / Window index: `TBD`
+These values are telemetry, never execution limits.
 
-| Dimension | Limit | Used | Remaining |
-|---|---:|---:|---:|
-| Scope items | TBD | TBD | TBD |
-| Validated findings | TBD | TBD | TBD |
-| Repair batches | TBD | TBD | TBD |
-| Implementation files | TBD | TBD | TBD |
-| Governance files | TBD | TBD | TBD |
-| Verification floor minutes | TBD | `not consumable` | `recomputed from wall clock` |
-| Actual verification minutes | N/A | TBD | N/A |
+| Metric | Observed |
+|---|---:|
+| Implementation paths touched | TBD |
+| Governance paths touched | TBD |
+| Callers/contracts reviewed | TBD |
+| Tests/checks run | TBD |
+| Elapsed time | TBD |
 
 ## Progress and verification
 
 - Changes completed: `TBD`
+- Regression/characterization evidence: `TBD`
 - Last passed gate: `TBD`
 - Failed/blocked/not-run checks: `TBD`
 - Current diff/callers/compatibility state: `TBD`
 - Decisions/approvals and expiry: `TBD`
+- Rollback/roll-forward path: `TBD`
 
 ## Continuation contract
 
-- Window rollover: `continue same invocation|N/A`
+- Continue automatically after checkpoint: `yes|no + real reason`
 - Explicit Resume required: `yes|no + reason`
-- Next smallest safe action: `TBD`
+- Next smallest safe semantic action: `TBD`
 - Commands/evidence to revalidate first: `TBD`
 - Stop/rollback condition: `TBD`
 - Deferred/out-of-scope work: `TBD`

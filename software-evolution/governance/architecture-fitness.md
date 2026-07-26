@@ -43,5 +43,5 @@ Record each function in architecture memory with:
 
 - `init`: inventory existing functions and propose missing high-value candidates; do not add product checks.
 - `audit`/`verify`/`release-check`: execute applicable functions read-only and report exact failures.
-- Writable modes: add or repair a fitness function when it is part of the coherent batch and verification budget.
+- Writable modes: add or repair a fitness function when it is part of the coherent batch and its verification plan covers the affected boundary.
 - `deep`: prioritize missing functions that would prevent repeated architecture decay.

@@ -3,7 +3,7 @@
 - Date: `{{DATE}}`
 - Target identity: `repository/branch/base/head/scope`
 - Write policy: `READ_ONLY`
-- Budget and coverage: `TBD`
+- Declared coverage and exclusions: `TBD`
 - Evidence limitations: `TBD`
 
 ## Verdict

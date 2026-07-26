@@ -34,5 +34,5 @@ Use `proposed`, `approved`, `rejected`, `superseded`, or `expired`.
 
 - Continue independent discovery and reversible preparation while a decision is pending.
 - Do not implement the branch whose semantics depend on an unapproved decision.
-- After approval, re-check current code, branch, migrations, consumers, and budget before execution; old evidence may have drifted.
+- After approval, re-check current code, branch, migrations, consumers, risk, and verification coverage before execution; old evidence may have drifted.
 - Link the decision ID from findings, repair plans, checkpoints, capability map, and architecture memory.

@@ -18,7 +18,7 @@
 - Data/contracts/permissions involved: `TBD`
 - Explicitly out of scope: `TBD`
 - Risk class: `R1|R2|R3|R4`
-- Batch/checkpoint ID and budget: `TBD`
+- Batch/checkpoint ID and verification boundary: `TBD`
 
 ## Proposed phases
 

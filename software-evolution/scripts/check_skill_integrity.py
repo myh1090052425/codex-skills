@@ -40,7 +40,7 @@ REQUIRED_FILES = {
     "governance/decision-governance.md",
     "governance/release-and-migrations.md",
     "governance/observability-and-sre.md",
-    "governance/budget-and-drift.md",
+    "governance/continuity-and-drift.md",
     "governance/architecture-fitness.md",
     "templates/finding-record.md",
     "templates/repair-plan.md",
@@ -67,14 +67,14 @@ REQUIRED_FILES = {
     "scripts/check_checkpoint_drift.py",
 }
 MODE_WORKFLOWS = {
-    "autopilot": ("workflows/autopilot.md", "WRITE POLICY: BUDGETED_WRITE"),
-    "overnight": ("workflows/overnight.md", "WRITE POLICY: BUDGETED_WRITE"),
+    "autopilot": ("workflows/autopilot.md", "WRITE POLICY: CONTINUOUS_WRITE"),
+    "overnight": ("workflows/overnight.md", "WRITE POLICY: CONTINUOUS_WRITE"),
     "init": ("workflows/init.md", "WRITE POLICY: CONTROL_PLANE_ONLY"),
     "audit": ("workflows/audit.md", "WRITE POLICY: READ_ONLY"),
     "govern": ("workflows/govern.md", "WRITE POLICY: BOUNDED_WRITE"),
     "repair": ("workflows/repair.md", "WRITE POLICY: BOUNDED_WRITE"),
     "verify": ("workflows/verify.md", "WRITE POLICY: READ_ONLY"),
-    "deep": ("workflows/deep.md", "WRITE POLICY: BUDGETED_WRITE"),
+    "deep": ("workflows/deep.md", "WRITE POLICY: CONTINUOUS_WRITE"),
     "release-check": ("workflows/release-check.md", "WRITE POLICY: READ_ONLY"),
     "observe": ("workflows/observe.md", "WRITE POLICY: READ_ONLY"),
     "resume": ("workflows/resume.md", "WRITE POLICY: INHERITED_OR_READ_ONLY"),
@@ -213,17 +213,16 @@ def validate_templates(root: Path, errors: list[str]) -> None:
                     "head",
                     "scope_paths",
                     "latest_batch_id",
-                    "window_index",
                     "predecessor_run_id",
                     "invocation_id",
-                    "session_deadline",
+                    "host_deadline",
                     "last_heartbeat_at",
                 }
                 missing = sorted(required - set(metadata))
                 if missing:
                     errors.append("autopilot run metadata missing fields: " + ", ".join(missing))
-                if metadata.get("schema_version") != 1:
-                    errors.append("autopilot run schema_version must be 1")
+                if metadata.get("schema_version") != 2:
+                    errors.append("autopilot run schema_version must be 2")
 
     config = root / "memory" / "software-evolution.config.template.yml"
     validator = root / "scripts" / "validate_project_config.py"
@@ -303,30 +302,28 @@ def validate_continuous_autopilot_contract(root: Path, errors: list[str]) -> Non
         "workflows/autopilot.md",
         (
             "effective_config",
-            "budget-only partial run auto-adoption",
+            "deprecated_paths",
+            "Recoverable partial auto-adoption",
             "Never take over another active owner",
             "Never create or adopt a new run whose branch/scope overlaps another active owner's run",
-            "## Window rollover",
-            "same invocation",
-            "Session hard limit",
-            "Governance files never consume `budget.max_files_changed`",
-            "must not become zero merely because verification ran",
-            "Do not end the response or instruct the user to run `resume`",
-            "configured Window checkpoint",
+            "## Checkpoint cadence, not quotas",
+            "telemetry only",
+            "One successful repair, a large diff, or a high file count is never a stop condition",
+            "Do not start a repair whose required verification cannot be completed",
+            "## Real stop conditions",
         ),
         errors,
     )
     require_phrases(
         root,
-        "governance/budget-and-drift.md",
+        "governance/continuity-and-drift.md",
         (
-            "## Two-level Autopilot budget",
-            "### Implementation files",
-            "### Governance files",
-            "max_governance_files_changed",
-            "time floor",
-            "same invocation",
-            "## Budget-only partial adoption",
+            "File counts and batch counts are telemetry",
+            "deprecated_paths",
+            "Legacy controls such as `max_files_changed`",
+            "## Control risk semantically",
+            "A coherent repair may touch one file or hundreds",
+            "## Recoverable partial adoption",
             "Another active owner is a concurrency boundary",
         ),
         errors,
@@ -335,8 +332,9 @@ def validate_continuous_autopilot_contract(root: Path, errors: list[str]) -> Non
         root,
         "workflows/resume.md",
         (
-            "Normal Autopilot Budget Window rollover must continue in the same invocation",
-            "Do not use `resume` as a workaround for ordinary Window rollover",
+            "Normal batch checkpoints continue automatically",
+            "Treat historical file/cycle/window/finding/batch quotas as deprecated evidence",
+            "Do not reset or recreate obsolete quota counters",
         ),
         errors,
     )
@@ -344,13 +342,12 @@ def validate_continuous_autopilot_contract(root: Path, errors: list[str]) -> Non
         root,
         "templates/autopilot-run.md",
         (
-            "## Session hard budget",
-            "## Current Window budget",
-            "## Window ledger",
-            "Implementation files",
-            "Governance files",
-            "Verification floor minutes",
-            "Invocation owner/last heartbeat",
+            "## Continuity state",
+            "## Execution metrics",
+            "## Checkpoint ledger",
+            "Counts are telemetry only",
+            "Legacy quota caused this stop: `must be no`",
+            "Invocation owner / last heartbeat",
         ),
         errors,
     )

@@ -9,7 +9,7 @@ Continuously govern the most relevant recent or high-value scope and complete sa
 1. Prefer user-specified scope.
 2. Otherwise inspect uncommitted changes and the current branch diff against its likely base.
 3. If no meaningful diff exists, select the highest-priority `ready` debt item or a critical flow with weak evidence.
-4. Load configured budget; if absent, declare conservative limits before editing.
+4. Resolve the write/risk contract, expected behavior, affected callers, rollback path, and verification capability before editing.
 
 ## Procedure
 
@@ -22,8 +22,8 @@ Continuously govern the most relevant recent or high-value scope and complete sa
 7. For visible behavior, exercise the affected UI/API/job flow when safely runnable.
 8. Re-scan for duplicate capability, rule fragmentation, boundary leakage, temporary branches, observability gaps, and architecture fitness failures.
 9. Update memory, health baseline, debt, decisions, and checkpoint only with verified evidence.
-10. Start another batch only when remaining file/batch/verification budget can support a complete cycle.
+10. Start another coherent batch whenever an independent repair-ready issue remains and its complete risk-required verification is available.
 
 ## Default output
 
-Return a compact governance summary using [../templates/governance-report.md](../templates/governance-report.md) when a durable report is required. Use [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md) for continuation state. Include detailed finding records for unresolved/high-risk items and exact verification results. Never turn budget exhaustion into an “all clear” claim.
+Return a compact governance summary using [../templates/governance-report.md](../templates/governance-report.md) when a durable report is required. Use [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md) for continuation state. Include detailed finding records for unresolved/high-risk items and exact verification results. Never turn a checkpoint, large diff, or high finding count into an “all clear” claim or a reason to stop.

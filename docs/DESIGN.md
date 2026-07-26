@@ -26,12 +26,12 @@ $software-evolution
 → Auto-bootstrap when missing
 → Model / Inspect / Prove / Prioritize
 → Repair / Test / Verify / Re-scan
-→ Window checkpoint and same-invocation rollover
-→ Continue next safe batch
-→ RUN/BATCH terminal checkpoint on hard stop
+→ Write a recoverable semantic-batch checkpoint
+→ Continue the next safe fully verifiable batch
+→ Save RUN/BATCH state only on a real stop or host interruption
 ```
 
-`overnight` 是更长的无人值守 Profile，使用隔离优先、有限 Deadline/Cycle/Batch/File Budget、最终 Verification Reserve 和 `RUN-*` 账本。
+`overnight` 是更长的无人值守 Profile，使用隔离优先和 `RUN-*` 账本，在宿主保持可用且存在安全可验证工作时持续执行；文件、Finding、Cycle、Batch 和耗时仅作遥测。
 
 其余模式是高级控制面：
 
@@ -39,7 +39,7 @@ $software-evolution
 - `audit`、`verify`、`release-check`、`observe` 严格只读。
 - `govern`、`repair` 是用户定向的小批次写模式。
 - `deep` 是分片式深度治理。
-- `resume` 只恢复真实中断、漂移、歧义或指定 `RUN-*`/`BATCH-*`；普通 Window 滚动由 Autopilot 同调用完成。
+- `resume` 只恢复真实中断、漂移、歧义或指定 `RUN-*`/`BATCH-*`；普通批次 Checkpoint 由 Autopilot 自动继续。
 
 模式先确定允许做什么，再确定如何做，避免把只读审计隐式升级为 Repair，也避免把默认自主治理错误拆成用户手工编排。
 
@@ -63,7 +63,7 @@ Report / Verdict / Decision / Specialist Handoff
 Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint
 ```
 
-公共流程不再无条件包含 Repair。“不要只输出报告”仅适用于已选择可写模式且证据、风险、预算和验证均满足的情况。
+公共流程不再无条件包含 Repair。“不要只输出报告”仅适用于已选择可写模式且证据、风险、业务权威、可逆性和验证均满足的情况。
 
 ## 5. 三个核心治理方向
 
@@ -147,7 +147,7 @@ actor intent
 
 将重要边界转成可重复命令或检查：依赖方向、Cycle、数据写入边界、API/Event Schema、迁移兼容、关键规则单一 Owner、测试/性能/观测门禁。每个 Fitness Function 有原因、Scope、期望、Gate、Owner 和 Exception Expiry。
 
-### Temporary Change Budget
+### Temporary Change Control
 
 Feature Flag、Fallback、Adapter、兼容分支、Dual Write 必须记录原因、Owner、两条路径的测试/遥测、退出条件和 Target Version/Trigger。
 
@@ -165,7 +165,7 @@ Feature Flag、Fallback、Adapter、兼容分支、Dual Write 必须记录原因
 - `health-baseline.json`：质量门禁、关键流程、SLI/SLO、已知失败和观测缺口。
 - `decisions/DEC-*.md`：权威和选项。
 - `batches/BATCH-*.md`：可恢复批次和 Git 漂移元数据。
-- `runs/RUN-*.md`：Autopilot/Overnight 运行预算、批次账本、停止原因和恢复入口。
+- `runs/RUN-*.md`：Autopilot/Overnight 连续性、执行遥测、批次账本、真实停止原因和恢复入口。
 - `reports/`：Audit、Verification、Release、Observation 证据。
 
 稳定 ID 让 Finding、Decision、Repair、Verification、Release、Autopilot 和 Resume 共享一个长期上下文。
@@ -201,20 +201,17 @@ Runtime Finding 必须记录环境、版本、窗口、过滤条件、样本/事
 
 ## 13. 睡后编程执行模型
 
-`autopilot` 是默认零前置多批循环；`overnight` 在其上增加长时预算、隔离优先和最终验证窗口。每次调用本身只授权配置允许的可逆 R1/R2 源码、测试和治理文件修改，不授权生产、部署、远端发布或 R3/R4 变更。
+`autopilot` 是默认零前置多批循环；`overnight` 在其上增加隔离优先和持久 `RUN-*` 连续性账本。每次调用本身只授权配置允许的可逆 R1/R2 源码、测试和治理文件修改，不授权生产、部署、远端发布或 R3/R4 受保护操作。
 
-无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。普通 Window 到限时停止该窗口编辑、完成验证和封账，然后在同一次调用中开启下一 Window；只有 Session 硬上限、真实阻塞、漂移、失败或 Host 中断才形成终止。
+无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。每个语义批次完成验证和 Checkpoint 后立即选择下一项；文件数、Finding、Cycle、Batch 和耗时只作遥测。只有无安全工作、权威/审批/证据/环境/专项能力全部阻塞、受保护边界、冲突漂移、所有候选假设隔离，或 Host 中断/挂起/限流/结束时才形成真实终止。
 
-## 14. 预算与恢复
+## 14. 连续执行、Checkpoint 与恢复
 
-配置先通过 Validator 合并为 `effective_config`。普通 Autopilot 采用双层预算：
+配置先通过 Validator 合并为 `effective_config`。当前控制面只保留真正影响权限和证据完整性的配置；旧 `budget`、`deep_budget`、`overnight_budget` 与旧 `autopilot.max_*` 配额为兼容输入，会被列入 `deprecated_paths` 并从 `effective_config` 剥离。
 
-- Session 硬上限：总运行时间、Cycle、Window、总 Implementation 文件和连续失败。
-- Budget Window：范围项、Finding、修复批次、Implementation 文件、Governance 文件和验证时间底线。
+批次边界是语义边界：一个根因、业务能力、不变量、契约边界或兼容阶段。文件数、Diff 大小、Finding 数、Cycle、Batch 数和耗时只作 Blast Radius、覆盖、趋势和恢复遥测，不得制造硬停止、重置权限或要求用户重复发命令。大范围修改通过更强的调用方分析、回滚和验证来控制，而不是通过任意文件上限控制。
 
-Implementation 与 Governance 双分账，治理记忆不会挤占产品代码额度。`reserve_verification_minutes` 是墙钟时间底线，不是一次性余额。到 Window 限制后完成验证、写入 Window Ledger、重置窗口计数并同调用继续；只有项目显式关闭 `continue_after_budget_checkpoint` 时，才形成配置型暂停点。
-
-Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、Session/Window 预算、双文件账本、invocation owner/heartbeat、最后门禁、决定/批准和下一步。默认启动可自动接管唯一、非活跃 owner 持有的 budget-only `partial`；若旧 Session 已到期则新建关联 successor Run，不篡改历史。另一个活跃 owner 的重叠 branch/scope 禁止接管和并发新建。显式 `resume` 分类：
+Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、变更遥测、invocation owner/heartbeat、最后门禁、决定/批准和下一步。默认启动可在 Drift、权威和最后门禁校验后自动接管唯一、非活跃且安全可恢复的宿主中断或旧配额型 `partial`；另一个活跃 owner 的重叠 branch/scope 禁止接管和并发新建。显式 `resume` 分类：
 
 - `NO_DRIFT`
 - `SAFE_DRIFT`
@@ -222,12 +219,12 @@ Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、�
 - `CONFLICTING_DRIFT`
 - `UNKNOWN`
 
-只有 No Drift 和经确认的 Safe Drift 能直接继续。
+只有 No Drift 和经确认的 Safe Drift 能直接继续。真实停止条件是：安全工作耗尽；权威/审批/证据/环境/专项能力阻塞；受保护外部操作或 R3/R4 决策；冲突漂移；所有候选修复假设被隔离；或宿主中断、挂起、限流、结束。
 
 ## 15. 自动修改安全与验收完整性
 
-写入必须同时满足 Mode、Risk、Authority、Budget、Verification 五个 Gate。R3 使用兼容性分阶段方案，R4 在操作点显式批准。
+写入必须同时满足 Mode、Risk、Authority、Reversibility、Verification 五个 Gate。R3 使用兼容性分阶段方案，R4 在操作点显式批准。
 
 `verify` 从 Artifact 和权威验收标准重新建模，不接受实现者的自证。失败时保持只读并输出 Repair Handoff。
 
-同一修复假设连续失败三次后停止；修改未达到风险所需测试、运行或观察证据时只能标记 `partial`、`failed` 或 `blocked`。
+同一修复假设连续失败三次后隔离该假设并重新建模，不能盲目第四次修改；若仍有其他独立安全工作，治理循环继续。修改未达到风险所需测试、运行或观察证据时只能标记 `partial`、`failed` 或 `blocked`。

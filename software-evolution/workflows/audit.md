@@ -11,7 +11,7 @@ Accept a file/module/flow/capability/debt ID/diff/branch or repository scope. If
 ## Procedure
 
 1. Execute the shared evidence phases in the common loop.
-2. Declare target identity, coverage worklist, evidence sources, exclusions, and budget.
+2. Declare target identity, coverage worklist, evidence sources, exclusions, and completion criteria.
 3. Inspect user/business outcomes, engineering/reliability, architecture/evolution, testing, and applicable specialist triggers.
 4. Reproduce or triangulate findings where safe. Do not run commands that may mutate tracked files, shared data, or external systems.
 5. Separate confirmed, probable, and candidate findings. Trace material findings to root cause and call chain.

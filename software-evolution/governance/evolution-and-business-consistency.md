@@ -50,6 +50,6 @@ Unify only accidental divergence with an authoritative target. Use `DEC-*` for u
 - Remove obsolete branches only after usage, compatibility, and rollback gates pass.
 - Record the decision, historical reason, and fitness function when recurrence risk is material.
 
-## Temporary-change budget
+## Temporary-change control
 
-Treat a compatibility branch, flag, adapter, fallback, or duplicated write as debt unless it has a reason, owner/source, measurable exit condition, test/telemetry for both paths, and target date/version/trigger when meaningful. Count it in the current batch budget and checkpoint.
+Treat a compatibility branch, flag, adapter, fallback, or duplicated write as debt unless it has a reason, owner/source, measurable exit condition, test/telemetry for both paths, and target date/version/trigger when meaningful. Record it in the current batch checkpoint and technical-debt ledger until the exit condition is verified.

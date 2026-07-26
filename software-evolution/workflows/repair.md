@@ -15,7 +15,7 @@ Repair a validated finding, decision-approved change, or ready technical-debt it
 1. Re-read the target, authority, related memory, config, repository rules, Git identity, current diff, and affected code.
 2. Reproduce the behavior or establish characterization evidence.
 3. Trace entry point → orchestration → domain rule → persistence/external effect → user/operator feedback.
-4. Define invariant, callers, contracts, risk, budget, rollback, and stop condition before editing.
+4. Define invariant, callers, contracts, risk, rollback, verification coverage, and stop condition before editing.
 5. Create/refresh a `BATCH-*` checkpoint with [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). For R2/R3 planning, use [../templates/repair-plan.md](../templates/repair-plan.md); R3 requires an approved staged compatibility plan.
 6. Apply the smallest root-cause fix while preserving public/data compatibility by default.
 7. Add the lowest-layer regression test plus boundary/UI coverage where behavior crosses a boundary.

@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Software Evolution Agent"
-  short_description: "持续自治治理、分窗验证并自动续跑的软件长期技术负责人"
-  default_prompt: "使用 $software-evolution 对当前项目执行零前置 Autopilot：自动初始化或接管唯一预算型未完 Run，在同一次调用中跨预算窗口持续发现、修复、补测试、验证和再扫描，直到 Session 硬停止条件。"
+  short_description: "按风险与验证持续治理，不因文件数或批次数停工的长期技术负责人"
+  default_prompt: "使用 $software-evolution 对当前项目执行零前置连续 Autopilot：自动初始化或安全接管未完 Run，持续发现、修复、补测试、验证和再扫描；文件数、Cycle、Finding 和 Batch 数量仅作审计指标，不得作为停止条件。"

@@ -1,6 +1,6 @@
 <!-- software-evolution-run
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "run_id": "RUN-TBD",
   "profile": "autopilot",
   "status": "running",
@@ -8,64 +8,52 @@
   "head": "FULL_GIT_SHA",
   "scope_paths": ["."],
   "latest_batch_id": "",
-  "window_index": 1,
   "predecessor_run_id": "",
   "invocation_id": "INV-TBD",
-  "session_deadline": "ISO-8601-TBD",
+  "host_deadline": "",
   "last_heartbeat_at": "ISO-8601-TBD"
 }
 -->
 
-# Autopilot Run — {{RUN_ID}}
+# Autonomous Governance Run — {{RUN_ID}}
 
-- Profile: `autopilot|overnight`
+- Profile: `autopilot|overnight|deep`
 - Status: `running|verification|completed|partial|blocked|failed|interrupted`
-- Started/deadline: `{{DATE_TIME}}` / `TBD`
+- Started / host deadline if supplied: `{{DATE_TIME}}` / `none|ISO-8601`
 - Repository/branch/HEAD: `TBD`
 - Initial worktree identity: `TBD`
 - Scope and exclusions: `TBD`
 - Effective config source: `explicit + bundled defaults`
 - Defaulted config paths: `TBD`
+- Deprecated legacy quota paths ignored: `TBD`
 - Predecessor/adoption: `none|RUN-* + reason`
-- Invocation owner/last heartbeat: `INV-*|host task identity` / `TBD`
+- Invocation owner / last heartbeat: `INV-*|host task identity` / `TBD`
 
-## Session hard budget
+## Continuity state
 
-| Dimension | Limit | Used | Remaining |
-|---|---:|---:|---:|
-| Runtime minutes | TBD | TBD | TBD |
-| Repair cycles | TBD | TBD | TBD |
-| Budget Windows | TBD | TBD | TBD |
-| Total Implementation files | TBD | TBD | TBD |
-| Consecutive failed batches | TBD | TBD | TBD |
+- Continuation rule: `continue while safe fully verifiable work exists and host is available`
+- Counts are telemetry only: `yes`
+- Current coherent batch: `TBD`
+- Last completed checkpoint: `TBD`
 
-## Current Window budget
+## Execution metrics
 
-- Window index: `TBD`
+| Metric | Observed | Meaning |
+|---|---:|---|
+| Coherent repair batches completed | 0 | Audit/recovery telemetry only |
+| Findings validated | 0 | Audit/recovery telemetry only |
+| Implementation paths touched | 0 | Blast-radius telemetry only |
+| Governance paths touched | 0 | Memory/checkpoint telemetry only |
+| Verification commands/flows run | 0 | Evidence telemetry only |
+| Elapsed host time | TBD | Observation only; not a Skill-imposed quota |
 
-| Dimension | Limit | Used | Remaining |
-|---|---:|---:|---:|
-| Scope items | TBD | TBD | TBD |
-| Findings | TBD | TBD | TBD |
-| Repair batches | TBD | TBD | TBD |
-| Implementation files | TBD | TBD | TBD |
-| Governance files | TBD | TBD | TBD |
-| Verification floor minutes | TBD | `not consumable` | `recomputed from wall clock` |
-| Actual verification minutes | N/A | TBD | N/A |
+## Checkpoint ledger
 
-## Window ledger
+| Sequence | Batch ID | Root cause/capability | Risk | Change metrics | Verification | Outcome / continuation |
+|---:|---|---|---|---|---|---|
+| 1 | TBD | TBD | TBD | TBD | TBD | TBD |
 
-| Window | Cycles/batches | Implementation files | Governance files | Verification | Rollover/terminal reason |
-|---:|---|---:|---:|---|---|
-| 1 | TBD | TBD | TBD | TBD | TBD |
-
-## Batch ledger
-
-| Cycle | Window | Batch ID | Finding/debt | Risk | Implementation/Governance files | Verification | Outcome |
-|---:|---:|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
-
-## Skipped and blocked work
+## Skipped, quarantined, and blocked work
 
 | ID/scope | Reason | Evidence/decision/handoff | Next safe action |
 |---|---|---|---|
@@ -80,8 +68,8 @@
 
 ## Stop and continuation
 
-- Current Window outcome: `continue same invocation|N/A`
-- Terminal stop reason: `session hard limit|configured checkpoint|safe work exhausted|blocked|drift|failure|host interruption|N/A`
+- Real terminal stop reason: `safe work exhausted|authority/evidence/environment blocked|protected boundary|drift|failure exhaustion|host interruption|N/A`
+- Legacy quota caused this stop: `must be no`
 - Latest valid checkpoint: `TBD`
 - Auto-adoptable by next plain invocation: `yes|no + reason`
 - Explicit Resume required: `yes|no + reason`

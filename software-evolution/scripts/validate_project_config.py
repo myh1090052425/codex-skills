@@ -19,7 +19,7 @@ from typing import Any
 KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 INT_RE = re.compile(r"^-?[0-9]+$")
 
-BUDGET_SCHEMA = {
+LEGACY_QUOTA_SCHEMA = {
     "max_scope_items": ("int", 1),
     "max_findings": ("int", 1),
     "max_repair_batches": ("int", 0),
@@ -35,16 +35,19 @@ SCHEMA: dict[str, Any] = {
         "allow_product_writes": ("bool", None),
     },
     "autopilot": {
+        "continue_until_no_safe_work": ("required_true", None),
+        "checkpoint_every_batch": ("required_true", None),
+        # Legacy quota controls remain parseable so existing projects do not break.
+        # They are stripped from effective_config and reported in deprecated_paths.
         "max_runtime_minutes": ("int", 1),
         "max_cycles": ("int", 1),
         "max_budget_windows": ("int", 1),
         "max_total_files_changed": ("int", 0),
         "max_consecutive_failed_batches": ("int", 1),
-        "checkpoint_every_batch": ("required_true", None),
         "continue_after_budget_checkpoint": ("bool", None),
     },
-    "budget": BUDGET_SCHEMA,
-    "deep_budget": BUDGET_SCHEMA,
+    "budget": LEGACY_QUOTA_SCHEMA,
+    "deep_budget": LEGACY_QUOTA_SCHEMA,
     "overnight_budget": {
         "max_runtime_minutes": ("int", 1),
         "max_cycles": ("int", 1),
@@ -78,6 +81,29 @@ SCHEMA: dict[str, Any] = {
     "fitness": {"enforce_registered_checks": ("bool", None)},
 }
 
+DEPRECATED_PATHS = {
+    "autopilot.max_runtime_minutes",
+    "autopilot.max_cycles",
+    "autopilot.max_budget_windows",
+    "autopilot.max_total_files_changed",
+    "autopilot.max_consecutive_failed_batches",
+    "autopilot.continue_after_budget_checkpoint",
+    "budget",
+    "deep_budget",
+    "overnight_budget",
+    *(f"budget.{key}" for key in LEGACY_QUOTA_SCHEMA),
+    *(f"deep_budget.{key}" for key in LEGACY_QUOTA_SCHEMA),
+    "overnight_budget.max_runtime_minutes",
+    "overnight_budget.max_cycles",
+    "overnight_budget.max_scope_items",
+    "overnight_budget.max_findings",
+    "overnight_budget.max_repair_batches",
+    "overnight_budget.max_files_changed",
+    "overnight_budget.max_governance_files_changed",
+    "overnight_budget.max_consecutive_failed_batches",
+    "overnight_budget.reserve_verification_minutes",
+}
+
 
 class ConfigError(ValueError):
     pass
@@ -89,7 +115,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--json",
         action="store_true",
-        help="Emit provided and effective (template-defaulted) configuration as JSON.",
+        help="Emit provided/effective config, defaults, and ignored legacy quota paths as JSON.",
     )
     return parser.parse_args()
 
@@ -225,7 +251,7 @@ def validate_value(path: str, value: Any, rule: tuple[str, Any], errors: list[st
             errors.append(f"{path} must be true; project config cannot authorize production writes")
     elif kind == "required_true":
         if value is not True:
-            errors.append(f"{path} must be true; unattended runs require per-batch checkpoints")
+            errors.append(f"{path} must be true; continuous autonomous execution and per-batch checkpoints cannot be disabled")
     elif kind == "int":
         if type(value) is not int or value < constraint:
             errors.append(f"{path} must be an integer >= {constraint}")
@@ -298,6 +324,30 @@ def collect_defaulted_paths(
     return paths
 
 
+def collect_deprecated_paths(data: dict[str, Any], prefix: str = "") -> list[str]:
+    paths: list[str] = []
+    for key, value in data.items():
+        path = f"{prefix}.{key}" if prefix else key
+        if path in DEPRECATED_PATHS:
+            paths.append(path)
+        elif isinstance(value, dict):
+            paths.extend(collect_deprecated_paths(value, path))
+    return sorted(paths)
+
+
+def strip_deprecated_paths(data: dict[str, Any], prefix: str = "") -> dict[str, Any]:
+    cleaned: dict[str, Any] = {}
+    for key, value in data.items():
+        path = f"{prefix}.{key}" if prefix else key
+        if path in DEPRECATED_PATHS:
+            continue
+        if isinstance(value, dict):
+            cleaned[key] = strip_deprecated_paths(value, path)
+        else:
+            cleaned[key] = value
+    return cleaned
+
+
 def load_template_defaults() -> dict[str, Any]:
     template = (
         Path(__file__).resolve().parent.parent
@@ -320,6 +370,7 @@ def main() -> int:
 
     effective: dict[str, Any] = {}
     defaulted_paths: list[str] = []
+    deprecated_paths: list[str] = []
     try:
         data = parse_restricted_yaml(path.read_text(encoding="utf-8"))
         errors = validate_config(data)
@@ -329,8 +380,10 @@ def main() -> int:
             if default_errors:
                 errors = ["invalid bundled default config: " + "; ".join(default_errors)]
             else:
-                effective = merge_defaults(defaults, data)
-                defaulted_paths = collect_defaulted_paths(defaults, data)
+                deprecated_paths = collect_deprecated_paths(data)
+                supported = strip_deprecated_paths(data)
+                effective = merge_defaults(defaults, supported)
+                defaulted_paths = collect_defaulted_paths(defaults, supported)
                 errors = validate_config(effective)
     except (OSError, UnicodeError, ConfigError) as exc:
         errors = [str(exc)]
@@ -352,12 +405,18 @@ def main() -> int:
                     "config": data,
                     "effective_config": effective,
                     "defaulted_paths": defaulted_paths,
+                    "deprecated_paths": deprecated_paths,
                 },
                 indent=2,
             )
         )
     else:
-        suffix = f" ({len(defaulted_paths)} defaulted value(s))" if defaulted_paths else ""
+        parts: list[str] = []
+        if defaulted_paths:
+            parts.append(f"{len(defaulted_paths)} defaulted value(s)")
+        if deprecated_paths:
+            parts.append(f"{len(deprecated_paths)} deprecated quota control(s) ignored")
+        suffix = f" ({'; '.join(parts)})" if parts else ""
         print(f"OK: valid software-evolution config: {path}{suffix}")
     return 0
 

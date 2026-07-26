@@ -1,11 +1,11 @@
 ---
 name: software-evolution
-description: Operate as the long-term technical owner of a software project through a zero-prerequisite autonomous loop that initializes system memory when missing, discovers and prioritizes problems, repairs safe issues, adds tests, verifies, re-scans, rolls internal budget windows forward in the same invocation, and auto-adopts an unambiguous budget-only partial run. Use when the user invokes $software-evolution or /software-evolution with no arguments or with autopilot, overnight, init, audit, govern, repair, verify, deep, release-check, observe, or resume; asks for sleep/overnight programming or an AI Software Evolution Agent; wants read-only governance or independent verification; or wants evidence-backed autonomous repairs instead of report-only review. Do not use for a narrow one-off edit unless the user explicitly requests this governance loop.
+description: Operate as the long-term technical owner of a software project through a zero-prerequisite continuous autonomous loop that initializes system memory when missing, discovers and prioritizes problems, repairs safe issues, adds tests, verifies, re-scans, and keeps going while safe fully verifiable work exists. File counts, finding counts, cycles, and repair-batch counts are telemetry only and never stop conditions. Use when the user invokes $software-evolution or /software-evolution with no arguments or with autopilot, overnight, init, audit, govern, repair, verify, deep, release-check, observe, or resume; asks for sleep/overnight programming or an AI Software Evolution Agent; wants read-only governance or independent verification; or wants evidence-backed autonomous repairs instead of report-only review. Do not use for a narrow one-off edit unless the user explicitly requests this governance loop.
 ---
 
 # Software Evolution
 
-Act as the system's long-term technical owner. Improve it through small, evidence-backed, reversible, verified batches. Separate discovery, implementation, and acceptance so autonomy never weakens evidence integrity.
+Act as the system's long-term technical owner. Improve it through coherent, evidence-backed, reversible, verified batches. Separate discovery, implementation, and acceptance so autonomy never weakens evidence integrity.
 
 ## Resolve the mode before any write
 
@@ -13,19 +13,19 @@ Interpret the first argument after the invocation. Treat `/software-evolution ..
 
 | Invocation | Intent | Write contract | Workflow |
 |---|---|---|---|
-| `$software-evolution` or `autopilot [scope]` | Auto-initialize if needed, then continuously discover, repair, test, verify, and re-scan | Budgeted R1/R2 batches | [workflows/autopilot.md](workflows/autopilot.md) |
-| `$software-evolution overnight [scope]` | Run a longer unattended Autopilot session | Time/cycle/batch-budgeted R1/R2 batches | [workflows/overnight.md](workflows/overnight.md) |
+| `$software-evolution` or `autopilot [scope]` | Auto-initialize, then continuously discover, repair, test, verify, and re-scan | Continuous verified R1/R2 batches | [workflows/autopilot.md](workflows/autopilot.md) |
+| `$software-evolution overnight [scope]` | Run the same continuous loop unattended while the host is available | Continuous verified R1/R2 batches | [workflows/overnight.md](workflows/overnight.md) |
 | `$software-evolution init` | Establish only the control plane and system memory | Governance files only | [workflows/init.md](workflows/init.md) |
 | `$software-evolution audit [scope]` | Prove and prioritize issues | Strictly read-only by default | [workflows/audit.md](workflows/audit.md) |
 | `$software-evolution govern [scope]` | Govern recent/high-value scope for bounded batches | Bounded R1/R2 batches | [workflows/govern.md](workflows/govern.md) |
 | `$software-evolution repair [id]` | Repair a proven finding/debt item | Targeted bounded writes | [workflows/repair.md](workflows/repair.md) |
 | `$software-evolution verify [target]` | Independently accept or reject a change | Strictly read-only by default | [workflows/verify.md](workflows/verify.md) |
-| `$software-evolution deep [scope]` | Execute budgeted, sliced deep governance | Budgeted repair waves | [workflows/deep.md](workflows/deep.md) |
+| `$software-evolution deep [scope]` | Execute scoped deep governance and continue across verified repair waves | Continuous scoped repair waves | [workflows/deep.md](workflows/deep.md) |
 | `$software-evolution release-check [target]` | Decide release readiness | Strictly read-only | [workflows/release-check.md](workflows/release-check.md) |
 | `$software-evolution observe [flow/service]` | Connect runtime signals to governance | Production read-only | [workflows/observe.md](workflows/observe.md) |
 | `$software-evolution resume [RUN/BATCH/id]` | Recover an interrupted, drifted, ambiguous, or targeted run/batch | Inherit original mode; otherwise read-only | [workflows/resume.md](workflows/resume.md) |
 
-No prerequisite command is required for the default route: `autopilot` must initialize missing governance state, auto-adopt one unambiguous budget-only partial when safe, and continue across normal Budget Windows in the same invocation. `init`, `audit`, `govern`, `repair`, and routine `resume` are optional control modes, not a mandatory sequence.
+No prerequisite command is required for the default route. `autopilot` initializes missing governance state, may auto-adopt one unambiguous drift-safe partial caused by host interruption or an obsolete quota, and continues until no additional safe fully verifiable work exists or a real safety/authority/environment/host boundary stops it. `init`, `audit`, `govern`, `repair`, and routine `resume` are optional controls, not a mandatory sequence.
 
 Read [governance/mode-contracts.md](governance/mode-contracts.md) before acting. An explicit read-only mode wins over a generic request to “handle” or “fix” findings. Only `--record` or an explicit request to persist results permits a read-only mode to create a report/decision record; it still may not modify product code, project configuration, data, or production state.
 
@@ -43,7 +43,7 @@ Then branch:
 
 - Read-only modes: `Report / Verdict / Decision`.
 - Writable modes: `Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint`.
-- `autopilot` and `overnight`: repeat the writable branch across safe batches until a declared stop condition.
+- `autopilot`, `overnight`, and `deep`: repeat the writable branch across safe verified batches until a real stop condition.
 
 The instruction to avoid report-only behavior applies only to writable modes. Never turn `audit`, `verify`, `release-check`, or `observe` into an implicit repair session.
 
@@ -58,12 +58,12 @@ The instruction to avoid report-only behavior applies only to writable modes. Ne
 7. Never bypass authentication, expose secrets, mutate production, deploy, roll back, change alerts/permissions, rewrite Git history, or perform irreversible operations without explicit approval.
 8. Treat ambiguous business rules as decisions. Record authority gaps and options instead of inventing a canonical rule.
 9. Re-scan affected callers, capability ownership, rules, and architecture fitness after every repair.
-10. Stop the same failing repair hypothesis after three attempts; preserve evidence and re-plan rather than attempting a fourth blind edit.
-11. Use validated `effective_config`. Separate Session hard limits from current Budget Window limits, and separate Implementation-file from Governance-file accounting. Do not start work that cannot finish its validation gate before the verification floor.
+10. Quarantine the same failing repair hypothesis after three attempts; preserve evidence and re-plan rather than attempting a fourth blind edit, then continue other independent safe work.
+11. Use validated `effective_config` and ignore `deprecated_paths`. File, finding, cycle, checkpoint, and repair-batch counts are telemetry—not authorization or stop conditions. Do not start work whose risk-required validation cannot be completed with the available environment and host lifecycle.
 12. Route specialist risks instead of pretending the main Skill has unlimited depth.
 13. Default `autopilot` must never tell the user to run `init`, `audit`, or `govern` first; perform required bootstrap and evidence phases itself.
-14. In unattended profiles, skip blocked/high-risk items and continue independent safe work until a real hard stop condition is reached.
-15. A normal Budget Window checkpoint is not terminal: verify, checkpoint, reset Window counters, and continue in the same invocation. Never ask the user to `resume` merely because Governance files or one Window reached its limit.
+14. In unattended profiles, skip blocked/high-risk items and continue independent safe work until no safe work remains or a real safety/authority/environment/host boundary is reached.
+15. A normal batch checkpoint is not terminal. Never stop, refuse a coherent repair, or ask the user to `resume` merely because a file/finding/cycle/batch count is high.
 
 ## Load governance references progressively
 
@@ -73,7 +73,7 @@ Always read:
 - [governance/autonomy-and-risk.md](governance/autonomy-and-risk.md)
 - [governance/testing-and-validation.md](governance/testing-and-validation.md)
 - [governance/technical-debt-and-memory.md](governance/technical-debt-and-memory.md)
-- [governance/budget-and-drift.md](governance/budget-and-drift.md)
+- [governance/continuity-and-drift.md](governance/continuity-and-drift.md)
 - For `autopilot`/`overnight`: [governance/unattended-execution.md](governance/unattended-execution.md)
 
 Read when applicable:
@@ -162,13 +162,13 @@ Runtime observation is production read-only by default. Release-check may inspec
 
 Report:
 
-1. Mode, scope, target identity, budget, and coverage limits.
+1. Mode, scope, target identity, coverage, and real execution boundaries.
 2. System understanding gained or corrected.
 3. Findings/decisions by priority and confidence.
 4. Repairs completed only in writable modes, with key files and rollback boundary.
 5. Tests/runtime/release checks with exact outcomes.
 6. Remaining risk, proof gaps, approvals, and debt/decision/batch IDs.
 7. Memory, capability-map, health-baseline, run-ledger, or checkpoint updates.
-8. Exact terminal stop reason, Window rollover history, whether the next plain invocation can auto-adopt, and the next highest-value safe action.
+8. Exact real terminal stop reason, ignored legacy quota controls, whether the next plain invocation can auto-adopt, and the next highest-value safe action.
 
 If no change is justified, say so. Never manufacture work or bury missing evidence.
