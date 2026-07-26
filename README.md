@@ -52,8 +52,9 @@ $software-evolution
 → 补充测试
 → 自动验证
 → 重扫调用方、能力、规则与架构
-→ 继续下一批
-→ 达到安全停止条件后保存 RUN/BATCH 检查点
+→ 当前 Budget Window 封账并自动开启下一 Window
+→ 在同一次调用中继续下一批
+→ 仅在 Session 硬上限或真实阻塞时保存终态
 ```
 
 需要更长的无人值守“睡后编程”窗口时：
@@ -85,7 +86,7 @@ $software-evolution resume [RUN/BATCH/id]
 
 | 模式 | 目标 | 默认写入行为 |
 |---|---|---|
-| `autopilot`（无参数默认） | 自动初始化并持续发现、修复、测试、验证、重扫 | 预算内多批 R1/R2 自动修复 |
+| `autopilot`（无参数默认） | 自动初始化/接管预算型未完 Run，并跨 Window 持续治理 | Session 预算内多批 R1/R2 自动修复 |
 | `overnight` | 长时间无人值守治理 | 时间、循环、批次、文件和验证预算内执行 |
 | `init` | 只建立控制面、系统模型、能力地图和基线 | 仅创建/更新治理文件，不改产品 |
 | `audit` | 只读证明问题、分级、形成修复/决策输入 | 不修改；`--record` 才持久化报告 |
@@ -95,9 +96,9 @@ $software-evolution resume [RUN/BATCH/id]
 | `deep` | 分片式深度治理 | 受范围、批次、文件和验证预算限制 |
 | `release-check` | 发布、迁移、混合版本、回滚就绪检查 | 严格只读，不部署 |
 | `observe` | 用日志、指标、Trace、告警和反馈校正治理 | 生产只读，不改告警/配置/数据 |
-| `resume` | 从 `RUN-*`/`BATCH-*` 安全恢复 | 继承原模式；无法证明时降级只读 |
+| `resume` | 恢复真实中断、漂移、歧义或指定 `RUN-*`/`BATCH-*` | 继承原模式；无法证明时降级只读 |
 
-`init`、`audit`、`govern`、`repair` 是高级控制面，不是默认命令的前置步骤。只读模式不会因为发现“明显问题”而偷偷修改代码。
+`init`、`audit`、`govern`、`repair` 是高级控制面，不是默认命令的前置步骤。普通预算窗口滚动也不需要 `resume`；只读模式不会因为发现“明显问题”而偷偷修改代码。
 
 ## 治理闭环
 
@@ -114,7 +115,7 @@ Orient → Model → Scope → Inspect → Prove → Prioritize → Decide
 可写模式 → Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint
 ```
 
-可写模式会在风险、授权、预算和验证条件满足时自主完成低风险修复；`autopilot`/`overnight` 在一批完成后会继续选择下一批，而不是返回让用户再次下命令。不具备完整证据时形成 Finding、Decision、Specialist Handoff 或 Checkpoint，并继续其他独立安全工作。
+可写模式会在风险、授权、预算和验证条件满足时自主完成低风险修复；`autopilot` 在一个 Window 到限后先验证和封账，再重置 Window 计数并在同一次调用中继续。治理记忆文件单独记账，不占产品实现文件额度。不具备完整证据时形成 Finding、Decision、Specialist Handoff 或 Checkpoint，并继续其他独立安全工作。
 
 ## 睡后编程与无人值守边界
 
@@ -146,7 +147,17 @@ docs/software-evolution/
 
 稳定 ID：`CAP-*`、`FIND-*`、`DEBT-*`、`DEC-*`、`BATCH-*`、`RUN-*`、`VER-*`、`REL-*`、`FIT-*`。
 
-`.software-evolution.yml` 控制最大风险等级、范围、Finding 数、修复批次、变更文件数、验证预留、只读报告持久化、发布门禁、观察窗口、专业路由和架构适应度检查。配置只能缩小自治权限，不能绕过平台、仓库或生产安全规则。
+`.software-evolution.yml` 控制最大风险等级、Session 硬上限、Budget Window、Finding、修复批次、Implementation/Governance 文件额度、验证时间底线、只读报告持久化、发布门禁、观察窗口、专业路由和架构适应度检查。旧版部分配置会与内置模板合并为确定性的 `effective_config`，不会再由 Agent 临时发明 90 分钟或更小额度。配置只能缩小自治权限，不能绕过平台、仓库或生产安全规则。
+
+预算采用双层、双账本：
+
+- Session 硬上限控制整次调用的运行时间、Cycle、Window 数和总 Implementation 文件数。
+- Window 额度控制单个安全批次窗口；到限后验证、封账并在同一次调用中继续。
+- Governance 文件只进入 `max_governance_files_changed`，不消耗 `max_files_changed`。
+- `reserve_verification_minutes` 是剩余墙钟时间底线，不是执行验证后归零的一次性余额。
+- 下一次普通 `$software-evolution` 可自动接管唯一、明确的 budget-only `partial`；显式 `resume` 只用于真实中断、漂移、歧义或指定恢复。
+- 另一个仍活跃的 invocation owner 是并发边界；默认命令不会接管它，也不会创建范围重叠的新 Run。
+- 只有项目显式设置 `continue_after_budget_checkpoint: false` 时，Window 封账才作为配置型暂停点。
 
 ## 三个核心治理方向
 
@@ -235,7 +246,7 @@ codex-skills/
 python3 -m py_compile install.py software-evolution/scripts/*.py
 python3 software-evolution/scripts/check_skill_integrity.py
 python3 software-evolution/scripts/validate_project_config.py \
-  --config software-evolution/memory/software-evolution.config.template.yml
+  --config software-evolution/memory/software-evolution.config.template.yml --json
 python3 -m unittest discover -s tests -v
 python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py software-evolution
 ```

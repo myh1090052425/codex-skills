@@ -16,7 +16,7 @@
 
 - Updated: `{{DATE}}`
 - Originating mode/target: `TBD`
-- Status: `planned|in_progress|verified|partial|blocked|abandoned`
+- Status: `planned|in_progress|verified|partial|blocked|failed|abandoned`
 - Risk class: `R1|R2|R3|R4`
 
 ## Goal and invariant
@@ -25,15 +25,19 @@
 - Root cause/finding/debt/decision IDs: `TBD`
 - Expected behavior and authority: `TBD`
 
-## Budget
+## Session and Window budget
+
+- Parent Run / Window index: `TBD`
 
 | Dimension | Limit | Used | Remaining |
 |---|---:|---:|---:|
 | Scope items | TBD | TBD | TBD |
 | Validated findings | TBD | TBD | TBD |
 | Repair batches | TBD | TBD | TBD |
-| Changed files | TBD | TBD | TBD |
-| Verification reserve minutes | TBD | TBD | TBD |
+| Implementation files | TBD | TBD | TBD |
+| Governance files | TBD | TBD | TBD |
+| Verification floor minutes | TBD | `not consumable` | `recomputed from wall clock` |
+| Actual verification minutes | N/A | TBD | N/A |
 
 ## Progress and verification
 
@@ -43,8 +47,10 @@
 - Current diff/callers/compatibility state: `TBD`
 - Decisions/approvals and expiry: `TBD`
 
-## Resume contract
+## Continuation contract
 
+- Window rollover: `continue same invocation|N/A`
+- Explicit Resume required: `yes|no + reason`
 - Next smallest safe action: `TBD`
 - Commands/evidence to revalidate first: `TBD`
 - Stop/rollback condition: `TBD`

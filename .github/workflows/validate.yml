@@ -23,7 +23,7 @@ jobs:
       - name: Validate project config template
         run: |
           python software-evolution/scripts/validate_project_config.py \
-            --config software-evolution/memory/software-evolution.config.template.yml
+            --config software-evolution/memory/software-evolution.config.template.yml --json
       - name: Validate Skill structure and contracts
         run: python software-evolution/scripts/check_skill_integrity.py
       - name: Run repository tests

@@ -1,6 +1,6 @@
 ---
 name: software-evolution
-description: Operate as the long-term technical owner of a software project through a zero-prerequisite autonomous loop that initializes system memory when missing, discovers and prioritizes problems, repairs safe issues, adds tests, verifies, re-scans, and continues across batches. Use when the user invokes $software-evolution or /software-evolution with no arguments or with autopilot, overnight, init, audit, govern, repair, verify, deep, release-check, observe, or resume; asks for sleep/overnight programming or an AI Software Evolution Agent; wants read-only governance or independent verification; or wants evidence-backed autonomous repairs instead of report-only review. Do not use for a narrow one-off edit unless the user explicitly requests this governance loop.
+description: Operate as the long-term technical owner of a software project through a zero-prerequisite autonomous loop that initializes system memory when missing, discovers and prioritizes problems, repairs safe issues, adds tests, verifies, re-scans, rolls internal budget windows forward in the same invocation, and auto-adopts an unambiguous budget-only partial run. Use when the user invokes $software-evolution or /software-evolution with no arguments or with autopilot, overnight, init, audit, govern, repair, verify, deep, release-check, observe, or resume; asks for sleep/overnight programming or an AI Software Evolution Agent; wants read-only governance or independent verification; or wants evidence-backed autonomous repairs instead of report-only review. Do not use for a narrow one-off edit unless the user explicitly requests this governance loop.
 ---
 
 # Software Evolution
@@ -14,7 +14,7 @@ Interpret the first argument after the invocation. Treat `/software-evolution ..
 | Invocation | Intent | Write contract | Workflow |
 |---|---|---|---|
 | `$software-evolution` or `autopilot [scope]` | Auto-initialize if needed, then continuously discover, repair, test, verify, and re-scan | Budgeted R1/R2 batches | [workflows/autopilot.md](workflows/autopilot.md) |
-| `$software-evolution overnight [scope]` | Run a longer unattended Autopilot window | Time/cycle/batch-budgeted R1/R2 batches | [workflows/overnight.md](workflows/overnight.md) |
+| `$software-evolution overnight [scope]` | Run a longer unattended Autopilot session | Time/cycle/batch-budgeted R1/R2 batches | [workflows/overnight.md](workflows/overnight.md) |
 | `$software-evolution init` | Establish only the control plane and system memory | Governance files only | [workflows/init.md](workflows/init.md) |
 | `$software-evolution audit [scope]` | Prove and prioritize issues | Strictly read-only by default | [workflows/audit.md](workflows/audit.md) |
 | `$software-evolution govern [scope]` | Govern recent/high-value scope for bounded batches | Bounded R1/R2 batches | [workflows/govern.md](workflows/govern.md) |
@@ -23,9 +23,9 @@ Interpret the first argument after the invocation. Treat `/software-evolution ..
 | `$software-evolution deep [scope]` | Execute budgeted, sliced deep governance | Budgeted repair waves | [workflows/deep.md](workflows/deep.md) |
 | `$software-evolution release-check [target]` | Decide release readiness | Strictly read-only | [workflows/release-check.md](workflows/release-check.md) |
 | `$software-evolution observe [flow/service]` | Connect runtime signals to governance | Production read-only | [workflows/observe.md](workflows/observe.md) |
-| `$software-evolution resume [RUN/BATCH/id]` | Safely continue an interrupted run or batch | Inherit original mode; otherwise read-only | [workflows/resume.md](workflows/resume.md) |
+| `$software-evolution resume [RUN/BATCH/id]` | Recover an interrupted, drifted, ambiguous, or targeted run/batch | Inherit original mode; otherwise read-only | [workflows/resume.md](workflows/resume.md) |
 
-No prerequisite command is required for the default route: `autopilot` must initialize missing governance state and continue in the same run. `init`, `audit`, `govern`, and `repair` are optional control modes, not a mandatory sequence.
+No prerequisite command is required for the default route: `autopilot` must initialize missing governance state, auto-adopt one unambiguous budget-only partial when safe, and continue across normal Budget Windows in the same invocation. `init`, `audit`, `govern`, `repair`, and routine `resume` are optional control modes, not a mandatory sequence.
 
 Read [governance/mode-contracts.md](governance/mode-contracts.md) before acting. An explicit read-only mode wins over a generic request to “handle” or “fix” findings. Only `--record` or an explicit request to persist results permits a read-only mode to create a report/decision record; it still may not modify product code, project configuration, data, or production state.
 
@@ -59,10 +59,11 @@ The instruction to avoid report-only behavior applies only to writable modes. Ne
 8. Treat ambiguous business rules as decisions. Record authority gaps and options instead of inventing a canonical rule.
 9. Re-scan affected callers, capability ownership, rules, and architecture fitness after every repair.
 10. Stop the same failing repair hypothesis after three attempts; preserve evidence and re-plan rather than attempting a fourth blind edit.
-11. Respect configured scope, file, finding, repair-batch, and verification-reserve budgets. Do not start work that cannot finish its validation gate.
+11. Use validated `effective_config`. Separate Session hard limits from current Budget Window limits, and separate Implementation-file from Governance-file accounting. Do not start work that cannot finish its validation gate before the verification floor.
 12. Route specialist risks instead of pretending the main Skill has unlimited depth.
 13. Default `autopilot` must never tell the user to run `init`, `audit`, or `govern` first; perform required bootstrap and evidence phases itself.
-14. In unattended profiles, skip blocked/high-risk items and continue independent safe work until budget or hard stop conditions are reached.
+14. In unattended profiles, skip blocked/high-risk items and continue independent safe work until a real hard stop condition is reached.
+15. A normal Budget Window checkpoint is not terminal: verify, checkpoint, reset Window counters, and continue in the same invocation. Never ask the user to `resume` merely because Governance files or one Window reached its limit.
 
 ## Load governance references progressively
 
@@ -119,7 +120,8 @@ python3 <skill-root>/scripts/bootstrap_project_memory.py --root "$PWD"
 The script creates only missing assets. In `init`, stop after the control-plane baseline. In `autopilot`/`overnight`, merge enough evidence to operate and continue directly into discovery and repair without asking the user for another command. Validate project configuration when present:
 
 ```bash
-python3 <skill-root>/scripts/validate_project_config.py --config .software-evolution.yml
+python3 <skill-root>/scripts/validate_project_config.py \
+  --config .software-evolution.yml --json
 ```
 
 Use stable IDs: `CAP-*`, `FIND-*`, `DEBT-*`, `DEC-*`, `BATCH-*`, `RUN-*`, `VER-*`, `REL-*`, and `FIT-*`. Re-read a durable file immediately before updating it and merge only this governance thread's entry.
@@ -167,6 +169,6 @@ Report:
 5. Tests/runtime/release checks with exact outcomes.
 6. Remaining risk, proof gaps, approvals, and debt/decision/batch IDs.
 7. Memory, capability-map, health-baseline, run-ledger, or checkpoint updates.
-8. Exact stop reason and next highest-value safe action.
+8. Exact terminal stop reason, Window rollover history, whether the next plain invocation can auto-adopt, and the next highest-value safe action.
 
 If no change is justified, say so. Never manufacture work or bury missing evidence.

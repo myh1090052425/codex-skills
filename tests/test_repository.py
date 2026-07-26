@@ -165,6 +165,16 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(1, metadata["schema_version"])
         self.assertEqual("RUN-TBD", metadata["run_id"])
         self.assertIn("latest_batch_id", metadata)
+        self.assertEqual(1, metadata["window_index"])
+        self.assertIn("predecessor_run_id", metadata)
+        self.assertEqual("INV-TBD", metadata["invocation_id"])
+        self.assertEqual("ISO-8601-TBD", metadata["session_deadline"])
+        self.assertEqual("ISO-8601-TBD", metadata["last_heartbeat_at"])
+        for heading in ("## Session hard budget", "## Current Window budget", "## Window ledger"):
+            self.assertIn(heading, template)
+        self.assertIn("Implementation files", template)
+        self.assertIn("Governance files", template)
+        self.assertIn("Verification floor minutes", template)
 
     def test_skill_integrity_script(self) -> None:
         result = subprocess.run(

@@ -26,8 +26,9 @@ $software-evolution
 → Auto-bootstrap when missing
 → Model / Inspect / Prove / Prioritize
 → Repair / Test / Verify / Re-scan
+→ Window checkpoint and same-invocation rollover
 → Continue next safe batch
-→ RUN/BATCH checkpoint on stop
+→ RUN/BATCH terminal checkpoint on hard stop
 ```
 
 `overnight` 是更长的无人值守 Profile，使用隔离优先、有限 Deadline/Cycle/Batch/File Budget、最终 Verification Reserve 和 `RUN-*` 账本。
@@ -38,7 +39,7 @@ $software-evolution
 - `audit`、`verify`、`release-check`、`observe` 严格只读。
 - `govern`、`repair` 是用户定向的小批次写模式。
 - `deep` 是分片式深度治理。
-- `resume` 恢复 `RUN-*` 或 `BATCH-*`，无法证明原权限时降级只读。
+- `resume` 只恢复真实中断、漂移、歧义或指定 `RUN-*`/`BATCH-*`；普通 Window 滚动由 Autopilot 同调用完成。
 
 模式先确定允许做什么，再确定如何做，避免把只读审计隐式升级为 Repair，也避免把默认自主治理错误拆成用户手工编排。
 
@@ -202,13 +203,18 @@ Runtime Finding 必须记录环境、版本、窗口、过滤条件、样本/事
 
 `autopilot` 是默认零前置多批循环；`overnight` 在其上增加长时预算、隔离优先和最终验证窗口。每次调用本身只授权配置允许的可逆 R1/R2 源码、测试和治理文件修改，不授权生产、部署、远端发布或 R3/R4 变更。
 
-无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。达到时间、循环、批次、文件、失败或验证预留边界时停止编辑，完成 aggregate verification，写入 `RUN-*` 和最新 `BATCH-*`，再提供精确 Resume 入口。
+无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。普通 Window 到限时停止该窗口编辑、完成验证和封账，然后在同一次调用中开启下一 Window；只有 Session 硬上限、真实阻塞、漂移、失败或 Host 中断才形成终止。
 
 ## 14. 预算与恢复
 
-`.software-evolution.yml` 约束：范围项、Finding 数、修复批次、变更文件数和验证预留。验证预算先保留，发现和编辑不得消费完最后的验证能力。
+配置先通过 Validator 合并为 `effective_config`。普通 Autopilot 采用双层预算：
 
-Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、预算、最后门禁、决定/批准和下一步。`resume` 分类：
+- Session 硬上限：总运行时间、Cycle、Window、总 Implementation 文件和连续失败。
+- Budget Window：范围项、Finding、修复批次、Implementation 文件、Governance 文件和验证时间底线。
+
+Implementation 与 Governance 双分账，治理记忆不会挤占产品代码额度。`reserve_verification_minutes` 是墙钟时间底线，不是一次性余额。到 Window 限制后完成验证、写入 Window Ledger、重置窗口计数并同调用继续；只有项目显式关闭 `continue_after_budget_checkpoint` 时，才形成配置型暂停点。
+
+Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、Session/Window 预算、双文件账本、invocation owner/heartbeat、最后门禁、决定/批准和下一步。默认启动可自动接管唯一、非活跃 owner 持有的 budget-only `partial`；若旧 Session 已到期则新建关联 successor Run，不篡改历史。另一个活跃 owner 的重叠 branch/scope 禁止接管和并发新建。显式 `resume` 分类：
 
 - `NO_DRIFT`
 - `SAFE_DRIFT`

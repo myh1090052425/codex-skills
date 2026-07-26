@@ -18,7 +18,7 @@ Skill 必须包含十一种 Workflow：
 autopilot overnight init audit govern repair verify deep release-check observe resume
 ```
 
-无参数入口必须映射 `autopilot`，且必须自动初始化缺失控制面；CI 应阻止再次把默认入口映射为 `govern` 或要求手工前置模式。
+无参数入口必须映射 `autopilot`，自动初始化缺失控制面、接管唯一 budget-only partial，并在正常 Window 到限后同调用续跑；CI 应阻止再次映射为 `govern`、要求手工前置模式或把 Window 当终止点。
 
 Write Policy：
 
@@ -45,7 +45,7 @@ INHERITED_OR_READ_ONLY
 - 只支持两空格 Mapping + Scalar 的受限 YAML。
 - 拒绝重复/未知键、Tab、复杂 YAML、非小写 Boolean 和敏感键。
 - `observe.production_read_only` 必须为 `true`。
-- `autopilot.checkpoint_every_batch` 必须为 `true`，并校验 `overnight_budget` 的时间、循环、失败和验证预留。
+- 输出原始 `config`、确定性合并后的 `effective_config` 和 `defaulted_paths`；校验 Session/Window、Governance 文件额度、Overnight 与验证底线。
 
 ### `check_checkpoint_drift.py`
 
@@ -66,7 +66,7 @@ python3 -m py_compile \
 python3 software-evolution/scripts/check_skill_integrity.py
 
 python3 software-evolution/scripts/validate_project_config.py \
-  --config software-evolution/memory/software-evolution.config.template.yml
+  --config software-evolution/memory/software-evolution.config.template.yml --json
 
 python3 -m unittest discover -s tests -v
 
@@ -104,12 +104,16 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
 ### Autopilot、睡后编程、恢复与预算
 
 - 默认命令无需 `init`/`audit`/`govern` 前置，自动 Bootstrap 后继续修复循环。
-- Overnight 有隔离、时间、循环、批次、文件、失败和最终验证门禁。
-- `RUN-*` 记录每批结果、停止原因和 Resume 入口。
-
+- 旧版部分配置得到完整 `effective_config`，不得自行发明临时额度。
+- Session/Window 双层预算清晰；Window 到限后同调用 rollover，不返回要求用户 `resume`。
+- Implementation/Governance 双分账；治理文件不得消费产品文件额度。
+- Verification Reserve 是墙钟 floor，不是执行测试后归零的 balance。
+- 唯一 budget-only partial 可由下一次默认命令自动接管；Resume 只处理真实中断、漂移、歧义或指定恢复。
+- 活跃 invocation owner 的重叠 branch/scope 禁止接管或新建；未知 liveness 必须按歧义处理。
+- 显式 `continue_after_budget_checkpoint: false` 和零 Governance 额度均有确定的暂停/只读语义。
+- Overnight 有隔离、时间、循环、批次、文件、失败和验证门禁。
+- `RUN-*` 记录 Session、当前 Window、Window Ledger、双文件账本和真实终止原因。
 - Deep 在扫描前声明范围、Finding、批次、文件和验证预留。
-- Resume 对每种 Drift 有明确行为。
-- 预算不足时不开始下一批修复。
 
 ### 文档一致性
 

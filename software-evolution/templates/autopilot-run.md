@@ -7,37 +7,63 @@
   "branch": "main",
   "head": "FULL_GIT_SHA",
   "scope_paths": ["."],
-  "latest_batch_id": ""
+  "latest_batch_id": "",
+  "window_index": 1,
+  "predecessor_run_id": "",
+  "invocation_id": "INV-TBD",
+  "session_deadline": "ISO-8601-TBD",
+  "last_heartbeat_at": "ISO-8601-TBD"
 }
 -->
 
 # Autopilot Run — {{RUN_ID}}
 
 - Profile: `autopilot|overnight`
-- Status: `running|verification|completed|partial|blocked|interrupted`
-- Started: `{{DATE_TIME}}`
-- Deadline/time budget: `TBD`
+- Status: `running|verification|completed|partial|blocked|failed|interrupted`
+- Started/deadline: `{{DATE_TIME}}` / `TBD`
 - Repository/branch/HEAD: `TBD`
 - Initial worktree identity: `TBD`
 - Scope and exclusions: `TBD`
+- Effective config source: `explicit + bundled defaults`
+- Defaulted config paths: `TBD`
+- Predecessor/adoption: `none|RUN-* + reason`
+- Invocation owner/last heartbeat: `INV-*|host task identity` / `TBD`
 
-## Budget
+## Session hard budget
 
 | Dimension | Limit | Used | Remaining |
 |---|---:|---:|---:|
 | Runtime minutes | TBD | TBD | TBD |
-| Cycles | TBD | TBD | TBD |
+| Repair cycles | TBD | TBD | TBD |
+| Budget Windows | TBD | TBD | TBD |
+| Total Implementation files | TBD | TBD | TBD |
+| Consecutive failed batches | TBD | TBD | TBD |
+
+## Current Window budget
+
+- Window index: `TBD`
+
+| Dimension | Limit | Used | Remaining |
+|---|---:|---:|---:|
 | Scope items | TBD | TBD | TBD |
 | Findings | TBD | TBD | TBD |
 | Repair batches | TBD | TBD | TBD |
-| Changed files | TBD | TBD | TBD |
-| Final verification reserve minutes | TBD | TBD | TBD |
+| Implementation files | TBD | TBD | TBD |
+| Governance files | TBD | TBD | TBD |
+| Verification floor minutes | TBD | `not consumable` | `recomputed from wall clock` |
+| Actual verification minutes | N/A | TBD | N/A |
+
+## Window ledger
+
+| Window | Cycles/batches | Implementation files | Governance files | Verification | Rollover/terminal reason |
+|---:|---|---:|---:|---|---|
+| 1 | TBD | TBD | TBD | TBD | TBD |
 
 ## Batch ledger
 
-| Cycle | Batch ID | Finding/debt | Risk | Changed files | Verification | Outcome |
-|---:|---|---|---|---:|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| Cycle | Window | Batch ID | Finding/debt | Risk | Implementation/Governance files | Verification | Outcome |
+|---:|---:|---|---|---|---|---|---|
+| TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## Skipped and blocked work
 
@@ -52,9 +78,11 @@
 - Capability/business-rule/fitness re-scan: `TBD`
 - Remaining proof gaps: `TBD`
 
-## Stop and resume
+## Stop and continuation
 
-- Stop reason: `TBD`
-- Safe work exhausted vs budget/interruption: `TBD`
+- Current Window outcome: `continue same invocation|N/A`
+- Terminal stop reason: `session hard limit|configured checkpoint|safe work exhausted|blocked|drift|failure|host interruption|N/A`
 - Latest valid checkpoint: `TBD`
-- Next command/action: `TBD`
+- Auto-adoptable by next plain invocation: `yes|no + reason`
+- Explicit Resume required: `yes|no + reason`
+- Next safe action: `TBD`

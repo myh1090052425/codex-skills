@@ -74,6 +74,67 @@ class ModeContractTests(unittest.TestCase):
         self.assertIn("continue in the same run", autopilot)
         self.assertIn("immediately select the next safe batch", autopilot)
 
+
+    def test_autopilot_rolls_windows_in_same_invocation(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        budget = (SKILL / "governance" / "budget-and-drift.md").read_text(encoding="utf-8")
+        skill = (SKILL / "SKILL.md").read_text(encoding="utf-8")
+        for phrase in (
+            "Window rollover",
+            "same invocation",
+            "Session hard limit",
+            "budget-only partial run auto-adoption",
+            "effective_config",
+            "Never take over another active owner",
+            "Never create or adopt a new run whose branch/scope overlaps another active owner's run",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, autopilot)
+        self.assertIn("Do not end the response or instruct the user to run `resume`", autopilot)
+        self.assertIn("normal window rollover", budget)
+        self.assertIn("continue across normal Budget Windows in the same invocation", skill)
+
+    def test_autopilot_does_not_create_overlapping_owned_runs(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        budget = (SKILL / "governance" / "budget-and-drift.md").read_text(encoding="utf-8")
+        unattended = (SKILL / "governance" / "unattended-execution.md").read_text(encoding="utf-8")
+        self.assertIn("another active owner's run", autopilot)
+        self.assertIn("classify the run as ambiguous", autopilot)
+        self.assertIn("Another active owner is a concurrency boundary", budget)
+        self.assertIn("unknown liveness is ambiguous, not abandoned", unattended)
+
+    def test_explicit_window_pause_and_zero_governance_budget_are_deterministic(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        budget = (SKILL / "governance" / "budget-and-drift.md").read_text(encoding="utf-8")
+        self.assertIn("autopilot.continue_after_budget_checkpoint: false", autopilot)
+        self.assertIn("configured Window checkpoint", autopilot)
+        self.assertIn("Governance-file budget makes", budget)
+        self.assertIn("configured checkpoint", budget)
+
+    def test_budget_accounting_separates_implementation_and_governance(self) -> None:
+        budget = (SKILL / "governance" / "budget-and-drift.md").read_text(encoding="utf-8")
+        unattended = (SKILL / "governance" / "unattended-execution.md").read_text(encoding="utf-8")
+        config = (SKILL / "memory" / "software-evolution.config.template.yml").read_text(encoding="utf-8")
+        self.assertIn("### Implementation files", budget)
+        self.assertIn("### Governance files", budget)
+        self.assertIn("never** consume `max_files_changed`", budget)
+        self.assertIn("max_governance_files_changed: 24", config)
+        self.assertIn("Governance files", unattended)
+        self.assertIn("Count them only against `max_governance_files_changed`", unattended)
+
+    def test_verification_reserve_is_a_floor_not_a_balance(self) -> None:
+        budget = (SKILL / "governance" / "budget-and-drift.md").read_text(encoding="utf-8")
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        self.assertIn("time floor", budget)
+        self.assertIn("not a consumable token balance", budget)
+        self.assertIn("must not become zero merely because verification ran", autopilot)
+
+    def test_resume_is_not_normal_window_rollover(self) -> None:
+        resume = (SKILL / "workflows" / "resume.md").read_text(encoding="utf-8")
+        self.assertIn("genuinely interrupted, drifted, ambiguous, or specifically targeted", resume)
+        self.assertIn("Normal Autopilot Budget Window rollover must continue in the same invocation", resume)
+        self.assertIn("Do not use `resume` as a workaround for ordinary Window rollover", resume)
+
     def test_verify_can_independently_accept_run_or_batch(self) -> None:
         verify = (SKILL / "workflows" / "verify.md").read_text(encoding="utf-8")
         self.assertIn("`RUN-*`, `BATCH-*`", verify)

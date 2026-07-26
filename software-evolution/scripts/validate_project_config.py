@@ -24,6 +24,7 @@ BUDGET_SCHEMA = {
     "max_findings": ("int", 1),
     "max_repair_batches": ("int", 0),
     "max_files_changed": ("int", 0),
+    "max_governance_files_changed": ("int", 0),
     "reserve_verification_minutes": ("int", 0),
 }
 SCHEMA: dict[str, Any] = {
@@ -34,9 +35,13 @@ SCHEMA: dict[str, Any] = {
         "allow_product_writes": ("bool", None),
     },
     "autopilot": {
+        "max_runtime_minutes": ("int", 1),
         "max_cycles": ("int", 1),
+        "max_budget_windows": ("int", 1),
+        "max_total_files_changed": ("int", 0),
         "max_consecutive_failed_batches": ("int", 1),
         "checkpoint_every_batch": ("required_true", None),
+        "continue_after_budget_checkpoint": ("bool", None),
     },
     "budget": BUDGET_SCHEMA,
     "deep_budget": BUDGET_SCHEMA,
@@ -47,6 +52,7 @@ SCHEMA: dict[str, Any] = {
         "max_findings": ("int", 1),
         "max_repair_batches": ("int", 0),
         "max_files_changed": ("int", 0),
+        "max_governance_files_changed": ("int", 0),
         "max_consecutive_failed_batches": ("int", 1),
         "reserve_verification_minutes": ("int", 0),
     },
@@ -80,7 +86,11 @@ class ConfigError(ValueError):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate .software-evolution.yml")
     parser.add_argument("--config", default=".software-evolution.yml")
-    parser.add_argument("--json", action="store_true", help="Emit a JSON result.")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit provided and effective (template-defaulted) configuration as JSON.",
+    )
     return parser.parse_args()
 
 
@@ -257,6 +267,46 @@ def validate_config(data: dict[str, Any]) -> list[str]:
     return errors
 
 
+def merge_defaults(defaults: dict[str, Any], provided: dict[str, Any]) -> dict[str, Any]:
+    merged: dict[str, Any] = {}
+    for key, default_value in defaults.items():
+        if key not in provided:
+            merged[key] = default_value
+        elif isinstance(default_value, dict) and isinstance(provided[key], dict):
+            merged[key] = merge_defaults(default_value, provided[key])
+        else:
+            merged[key] = provided[key]
+    for key, value in provided.items():
+        if key not in merged:
+            merged[key] = value
+    return merged
+
+
+def collect_defaulted_paths(
+    defaults: dict[str, Any], provided: dict[str, Any], prefix: str = ""
+) -> list[str]:
+    paths: list[str] = []
+    for key, default_value in defaults.items():
+        path = f"{prefix}.{key}" if prefix else key
+        if key not in provided:
+            if isinstance(default_value, dict):
+                paths.extend(collect_defaulted_paths(default_value, {}, path))
+            else:
+                paths.append(path)
+        elif isinstance(default_value, dict) and isinstance(provided[key], dict):
+            paths.extend(collect_defaulted_paths(default_value, provided[key], path))
+    return paths
+
+
+def load_template_defaults() -> dict[str, Any]:
+    template = (
+        Path(__file__).resolve().parent.parent
+        / "memory"
+        / "software-evolution.config.template.yml"
+    )
+    return parse_restricted_yaml(template.read_text(encoding="utf-8"))
+
+
 def main() -> int:
     args = parse_args()
     path = Path(args.config).expanduser()
@@ -268,9 +318,20 @@ def main() -> int:
             print(f"ERROR: {message}", file=sys.stderr)
         return 2
 
+    effective: dict[str, Any] = {}
+    defaulted_paths: list[str] = []
     try:
         data = parse_restricted_yaml(path.read_text(encoding="utf-8"))
         errors = validate_config(data)
+        if not errors:
+            defaults = load_template_defaults()
+            default_errors = validate_config(defaults)
+            if default_errors:
+                errors = ["invalid bundled default config: " + "; ".join(default_errors)]
+            else:
+                effective = merge_defaults(defaults, data)
+                defaulted_paths = collect_defaulted_paths(defaults, data)
+                errors = validate_config(effective)
     except (OSError, UnicodeError, ConfigError) as exc:
         errors = [str(exc)]
 
@@ -284,9 +345,20 @@ def main() -> int:
         return 1
 
     if args.json:
-        print(json.dumps({"status": "OK", "config": data}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "status": "OK",
+                    "config": data,
+                    "effective_config": effective,
+                    "defaulted_paths": defaulted_paths,
+                },
+                indent=2,
+            )
+        )
     else:
-        print(f"OK: valid software-evolution config: {path}")
+        suffix = f" ({len(defaulted_paths)} defaulted value(s))" if defaulted_paths else ""
+        print(f"OK: valid software-evolution config: {path}{suffix}")
     return 0
 
 

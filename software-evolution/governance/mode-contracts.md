@@ -18,7 +18,7 @@ Resolve the marker before running commands.
 
 | Mode | Product code/tests | Project config/memory | Recorded governance artifacts | Data/external/production | Git/remote |
 |---|---|---|---|---|---|
-| `autopilot` | Budgeted R1/R2 | Auto-create/update relevant control plane, memory, run ledger, checkpoints | Yes | No production mutation | Local inspection only; commit/push only when separately requested |
+| `autopilot` | Session-budgeted R1/R2 with rolling Windows | Auto-create/update relevant control plane, memory, run ledger, checkpoints | Yes; Governance files use a separate ledger | No production mutation | Local inspection only; commit/push only when separately requested |
 | `overnight` | Time/cycle-budgeted R1/R2 | Auto-create/update control plane, `RUN-*`, memory, checkpoints | Yes | No production mutation | Prefer isolated worktree; no remote publication without separate approval |
 | `init` | No | Create/update governance control-plane files only | Initialization result | Read-only; disposable isolated test state only when needed | No commit/push unless separately requested |
 | `audit` | No | No | Only with `--record`/explicit request | Read-only; avoid mutating test commands | No mutation |
@@ -28,7 +28,7 @@ Resolve the marker before running commands.
 | `deep` | Budgeted waves | Update memory/checkpoints | Yes | No production mutation without approval | Commit/push only when requested |
 | `release-check` | No | No | Only with `--record`/explicit request | Production evidence read-only; never deploy/rollback | No mutation |
 | `observe` | No | No | Only with `--record`/explicit request | Production read-only; never change alerts/flags/data | No mutation |
-| `resume` | Inherit proven original contract | Inherit | Inherit | Inherit, with all approvals preserved | Inherit |
+| `resume` | Inherit proven interrupted/targeted contract | Inherit | Inherit | Inherit, with all approvals preserved | Inherit |
 
 ## Read-only means read-only
 
@@ -47,7 +47,7 @@ It may run isolated/local checks that create only disposable ignored artifacts w
 
 If `autonomy.allow_product_writes` is `false`, treat `autopilot`, `overnight`, `govern`, `repair`, and `deep` as read-only regardless of their normal contract.
 
-A writable mode may edit only the declared coherent batch. `autopilot` and `overnight` may execute multiple batches, but each batch must independently satisfy the gates and update its `RUN-*` ledger. Before the first edit, require:
+A writable mode may edit only the declared coherent batch. `autopilot` and `overnight` may execute multiple batches, but each batch must independently satisfy the gates and update its `RUN-*` ledger. In Autopilot, Governance files are accounted separately from Implementation files; a Budget Window checkpoint continues in the same invocation while Session hard limits permit. Before the first edit, require:
 
 - Proven problem and authoritative expected behavior.
 - Known affected callers and protected boundaries.
@@ -56,7 +56,7 @@ A writable mode may edit only the declared coherent batch. `autopilot` and `over
 - Rollback and stop condition.
 - Budget sufficient for validation.
 
-If any condition fails, fall back to a read-only finding or decision record.
+If any condition fails, fall back to a read-only finding or decision record. A normal Window rollover does not change the write contract, create new authority, or require explicit `resume`. Default Autopilot may auto-adopt one unambiguous budget-only partial after validating drift and the original contract.
 
 ## Conflicting instructions
 

@@ -9,7 +9,7 @@ Use this loop for every mode. Resolve the write contract before any command that
 - Locate the repository root and read applicable `AGENTS.md`, contribution guides, architecture docs, runbooks, test docs, project configuration, and software-evolution memory.
 - Inspect Git branch, HEAD, status, relevant base/diff, and recent commits when Git exists.
 - Identify user-owned changes, generated areas, migrations, secrets, production resources, shared environments, and protected boundaries.
-- Validate `.software-evolution.yml` when present. Use conservative defaults when absent and state them.
+- Validate `.software-evolution.yml` with `validate_project_config.py --json` when present and operate from `effective_config`. If absent in a writable bootstrap mode, create the bundled template; never invent ad hoc limits for omitted legacy keys.
 - Record assumptions and turn material unknowns into discovery tasks.
 
 ### 2. Build the working system model
@@ -30,7 +30,8 @@ Prefer user scope, then current changes, critical journeys, ready debt, and evid
 
 - Included files/modules/flows/contracts and explicit exclusions.
 - Target identity: working tree, branch/base, commit, PR, release, service, or time window.
-- Maximum scope items, findings to validate, repair batches, changed files, and verification reserve.
+- For Autopilot, Session hard limits plus current Budget Window limits; for other modes, the applicable whole-run limits.
+- Maximum scope items, findings, repair batches, Implementation files, Governance files, and the wall-clock verification floor.
 - Specialist routes and environments that are unavailable or unsafe.
 
 Do not claim repository-wide, production-wide, or release-wide coverage beyond the declared worklist.
@@ -97,12 +98,12 @@ Reproduce the issue or capture characterization evidence when feasible. Run dire
 1. Add or identify a regression check.
 2. Apply the minimum root-cause fix.
 3. Run the narrow check immediately.
-4. Inspect the diff for accidental churn and budget overflow.
+4. Inspect the diff for accidental churn and classify unique paths as Implementation or Governance before checking Window and Session budgets.
 5. Run risk-required broader checks.
 6. Exercise the user/API/job flow when externally visible.
 7. Re-scan callers, rules, capability ownership, boundaries, and fitness functions.
 
-Stop the same failed hypothesis after three attempts. Do not start another repair batch when doing so would violate file/batch limits or consume the reserved verification budget.
+Stop the same failed hypothesis after three attempts. Do not start another repair batch when expected editing plus required checks cannot finish before the verification floor. Performing verification does not consume that floor into a zero balance.
 
 ### 10. Verify and independently challenge
 
@@ -118,6 +119,7 @@ Stop the same failed hypothesis after three attempts. Do not start another repai
 - Update health baseline only from measured evidence.
 - Persist the exact verification status, remaining work, Git identity, and next safe action in the batch checkpoint.
 - In `autopilot`/`overnight`, update the parent `RUN-*` ledger and immediately continue with another fully affordable safe batch; one successful repair is not a stop condition.
+- In normal Autopilot, reaching a Window limit triggers verification and same-invocation Window rollover while Session hard limits permit. Do not route ordinary rollover through `resume`.
 
 ## Stop conditions
 
@@ -127,6 +129,7 @@ Stop safely when:
 - Required evidence, environment, authority, or approval is unavailable.
 - A protected or irreversible boundary is next.
 - Drift invalidates the current checkpoint.
-- The budget cannot support another complete edit-test-rescan cycle.
+- For bounded modes, the applicable whole-run budget cannot support another complete edit-test-rescan cycle.
+- For Autopilot, a Session hard limit is reached after checking whether a smaller independent batch fits; a current Window limit alone is not terminal.
 
-Never convert an incomplete batch into a completion claim. Preserve a resumable checkpoint or a read-only finding instead.
+Never convert an incomplete batch into a completion claim. Preserve a checkpoint or a read-only finding instead. Use explicit `resume` only for true interruption, drift, ambiguity, or targeted recovery—not ordinary Window rollover.

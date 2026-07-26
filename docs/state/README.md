@@ -10,7 +10,7 @@
 
 ## 活跃线程索引
 
-- 当前无活跃线程。
+- [Software Evolution 连续预算与自动续跑修复](2026-07-26-software-evolution-continuous-budget-v1.md) — 本地完成，待发布验证；双层预算、双文件账本、Effective Config、同调用 Window rollover、自动接管预算型 partial 和并发 Run owner 门禁已通过 33 项测试及八角度 Review。
 
 ## 已完成/归档
 
@@ -20,9 +20,10 @@
 
 ## 候选下一步
 
-1. 在真实项目中前向验证 `$software-evolution`、`overnight`、`verify RUN-*` 和 `resume RUN-*`。
-2. 根据真实项目反馈迭代治理规则、风险阈值、预算默认值和专项 Skill 路由。
-3. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
+1. 提交并发布连续预算与自动续跑修复，确认 GitHub Actions `Validate Skill`。
+2. 继续在真实项目中验证 `$software-evolution overnight`、`verify RUN-*` 和真实中断后的 `resume RUN-*`。
+3. 根据真实项目反馈迭代治理规则、风险阈值、预算默认值和专项 Skill 路由。
+4. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
 
 ## 阻塞
 
@@ -42,3 +43,4 @@
 - 仓库提交 `docs/state/`，用于 Codex 跨会话恢复；其中不得记录凭证、私密配置或不可移植的本机绝对路径。
 - 项目工程记忆默认写入目标项目的 `docs/software-evolution/`，与本仓库的 `docs/state/` 分工不同。
 - GitHub Actions 的 `Validate Skill` 必须通过后才可宣称仓库发布有效。
+- Autopilot 的活跃 invocation owner 是并发边界；新 Run 元数据必须记录可机读 deadline/heartbeat，禁止接管或创建范围重叠的新 Run。

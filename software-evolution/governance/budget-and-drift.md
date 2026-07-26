@@ -1,45 +1,92 @@
 # Budget and Drift Control
 
-Bound work so every started repair can finish its verification and be safely resumed.
+Bound work so every started repair can finish verification without turning an internal safety checkpoint into unnecessary user interaction.
 
-## Project configuration
+## Effective project configuration
 
-Use `.software-evolution.yml` when present and valid. Validate it with `scripts/validate_project_config.py`. Configuration narrows autonomy; it never overrides platform, repository, risk, or approval rules.
+Use `.software-evolution.yml` when present and valid. Always validate with JSON output and operate from `effective_config`, which merges missing keys from the bundled template without overwriting explicit project values:
 
-Core controls:
+```bash
+python3 <skill-root>/scripts/validate_project_config.py \
+  --config .software-evolution.yml --json
+```
 
-- `autonomy.max_risk`
-- `budget.max_scope_items`
-- `budget.max_findings`
-- `budget.max_repair_batches`
-- `budget.max_files_changed`
-- `budget.reserve_verification_minutes`
-- corresponding `deep_budget` and `overnight_budget` limits
-- `autopilot.max_cycles`, `autopilot.max_consecutive_failed_batches`, and mandatory per-batch checkpoints
-- `readonly.allow_record_persistence` (explicit `--record` is still required)
-- release gates, observation defaults, specialist routing, and fitness enforcement
+Never invent ad hoc lower limits because an older project config omits newer sections. Configuration may narrow autonomy; it never overrides platform, repository, risk, or approval rules.
 
-If configuration is absent, declare conservative limits in the response/checkpoint before editing. A zero repair-batch/file budget makes the run read-only.
+## Two-level Autopilot budget
 
-## Budget accounting
+Default `autopilot` has two levels:
 
-Count:
+1. **Session hard limits** from `autopilot`: runtime, total cycles, budget windows, total implementation files, consecutive failed batches, and checkpoint policy.
+2. **Current window limits** from `budget`: scope items, findings, repair batches, implementation files, governance files, and verification reserve.
+
+A budget window is an internal safety and verification boundary. When a window limit is reached and `autopilot.continue_after_budget_checkpoint` is `true`, finish verification, checkpoint the window, increment the window index, reset only window counters, and continue in the same invocation while session hard limits permit. Do not ask the user to run `resume` for normal window rollover. An explicit `false` narrows autonomy: finish and record the Window checkpoint, then stop with `configured checkpoint` rather than misreporting a Session hard limit.
+
+`deep_budget` and `overnight_budget` remain whole-run limits unless their workflow explicitly declares windows.
+
+## File accounting classes
+
+Count unique paths changed by the current run. Editing the same path repeatedly in one window counts once.
+
+### Implementation files
+
+Count against `max_files_changed`:
+
+- Product source and tests.
+- Product/runtime configuration, schemas, migrations, lock files, build scripts, and tracked generated artifacts.
+- User-facing, requirements, architecture, API, or operational documentation that is part of the product change.
+
+### Governance files
+
+Count separately against `max_governance_files_changed` and **never** consume `max_files_changed`:
+
+- Files under the configured `memory_dir`, including `RUN-*`, `BATCH-*`, debt, capability, architecture, decisions, and reports.
+- The current Software Evolution repository-state thread and its minimal `docs/state/README.md` index update.
+
+Do not use the governance classification to hide product documentation, migrations, configuration, or unrelated cleanup. Keep governance writes minimal even when their separate budget remains.
+
+## Other accounting rules
 
 - One scope item per file/module/route/capability/contract explicitly inspected.
 - One validated finding when it reaches confirmed/probable-with-safe-plan.
 - One repair batch per independent root cause or contract boundary.
-- Every changed tracked file, including tests, docs, migrations, generated artifacts, and config.
+- One cycle per completed discover-select-repair-verify-rescan iteration.
+- `autopilot.max_total_files_changed` counts unique implementation files across all windows in the invocation.
 
-For `autopilot`/`overnight`, also count one cycle per completed discover-select-repair-verify-rescan iteration and enforce runtime minutes conservatively. Do not evade limits by splitting one logical file or batch into artificial sub-items. Reserve verification capacity before editing. When the reserve would be consumed, stop discovery/editing and verify or checkpoint.
+`reserve_verification_minutes` is a **time floor**, not a consumable token balance. Before starting a batch, retain enough remaining session time for narrow tests, risk-required broader checks, diff review, re-scan, memory reconciliation, and checkpointing. Record actual verification time separately. After a successful window checkpoint, re-establish the same floor from remaining session time; do not write “reserve remaining = 0” merely because verification was performed.
+
+Do not evade limits by splitting one logical file or root cause into artificial items. A zero repair-batch, implementation-file, total-implementation-file, or Governance-file budget makes the applicable writable profile read-only because it cannot complete the mandatory repair/checkpoint contract.
+
+## Window rollover
+
+At any window limit:
+
+1. Stop new edits for that window.
+2. Finish all required verification and classify incomplete work honestly.
+3. Re-scan capability, business-rule, architecture, runtime, and unrelated-change boundaries.
+4. Update the `BATCH-*` checkpoint and current `RUN-*` window ledger.
+5. If session hard limits, safety, time, and available work still permit, start the next window immediately in the same invocation.
+6. Stop only when a session hard limit or another real stop condition is reached.
+
+Before terminal stop, search for a smaller independent repair-ready batch that fits the remaining session and window budgets. Do not infer that no work fits merely because the highest-priority candidate is too large.
+
+## Budget-only partial adoption
+
+On default Autopilot startup, inspect current-branch/scope run ledgers. If exactly one relevant run that is not actively owned is `partial` solely because of a Window/file/reserve accounting boundary, validate its checkpoint and automatically adopt it. If its Session hard limits expired, create a linked successor and carry forward only verified evidence and remaining queue. Do not auto-adopt ambiguous, drift-conflicted, safety-blocked, authority-blocked, or failed-hypothesis runs.
+
+Another active owner is a concurrency boundary, not a reason to create a second overlapping run. Determine liveness from host task state when available, otherwise from a fresh heartbeat within the recorded deadline. If liveness is ambiguous, do not assume abandonment. A separate run may proceed only for an explicitly disjoint branch/scope after recording protected paths and capability boundaries.
+
+This automatic route is distinct from explicit `resume`, which remains for host interruption, drift recovery, ambiguity, or targeted RUN/BATCH continuation.
 
 ## Checkpoints
 
-Use [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). Include parseable metadata, mode, target, branch, HEAD, worktree fingerprint/entries, scope paths, budget used/remaining, decisions/approvals, last passed gate, exact failures, and next safe action.
+Use [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). Include parseable metadata, mode, target, branch, HEAD, worktree fingerprint/entries, scope paths, implementation/governance accounting, window/session usage, decisions/approvals, last passed gate, exact failures, and next safe action.
 
-Create/refresh a checkpoint:
+Create or refresh a checkpoint:
 
 - Before significant edits.
 - After each verified repair wave.
+- At every budget-window rollover.
 - When a decision, environment, or approval blocks progress.
 - Before ending an incomplete run.
 

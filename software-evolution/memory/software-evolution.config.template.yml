@@ -8,15 +8,22 @@ autonomy:
   allow_product_writes: true
 
 autopilot:
-  max_cycles: 4
+  max_runtime_minutes: 240
+  max_cycles: 8
+  max_budget_windows: 4
+  max_total_files_changed: 48
   max_consecutive_failed_batches: 2
   checkpoint_every_batch: true
+  continue_after_budget_checkpoint: true
 
+# Normal Autopilot budget window. Reaching this window checkpoint does not
+# stop the invocation while the Autopilot session budget still permits work.
 budget:
   max_scope_items: 60
   max_findings: 12
   max_repair_batches: 2
   max_files_changed: 12
+  max_governance_files_changed: 24
   reserve_verification_minutes: 15
 
 deep_budget:
@@ -24,6 +31,7 @@ deep_budget:
   max_findings: 40
   max_repair_batches: 3
   max_files_changed: 24
+  max_governance_files_changed: 48
   reserve_verification_minutes: 30
 
 overnight_budget:
@@ -33,6 +41,7 @@ overnight_budget:
   max_findings: 80
   max_repair_batches: 8
   max_files_changed: 60
+  max_governance_files_changed: 96
   max_consecutive_failed_batches: 2
   reserve_verification_minutes: 45
 

@@ -213,6 +213,11 @@ def validate_templates(root: Path, errors: list[str]) -> None:
                     "head",
                     "scope_paths",
                     "latest_batch_id",
+                    "window_index",
+                    "predecessor_run_id",
+                    "invocation_id",
+                    "session_deadline",
+                    "last_heartbeat_at",
                 }
                 missing = sorted(required - set(metadata))
                 if missing:
@@ -279,6 +284,78 @@ def validate_drift_mode_registry(root: Path, errors: list[str]) -> None:
         errors.append("drift checker mode registry differs from mode contracts: " + " ".join(details))
 
 
+
+def require_phrases(
+    root: Path, relative: str, phrases: tuple[str, ...], errors: list[str]
+) -> None:
+    path = root / relative
+    if not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8")
+    for phrase in phrases:
+        if phrase not in text:
+            errors.append(f"{relative} missing continuous-autopilot contract: {phrase}")
+
+
+def validate_continuous_autopilot_contract(root: Path, errors: list[str]) -> None:
+    require_phrases(
+        root,
+        "workflows/autopilot.md",
+        (
+            "effective_config",
+            "budget-only partial run auto-adoption",
+            "Never take over another active owner",
+            "Never create or adopt a new run whose branch/scope overlaps another active owner's run",
+            "## Window rollover",
+            "same invocation",
+            "Session hard limit",
+            "Governance files never consume `budget.max_files_changed`",
+            "must not become zero merely because verification ran",
+            "Do not end the response or instruct the user to run `resume`",
+            "configured Window checkpoint",
+        ),
+        errors,
+    )
+    require_phrases(
+        root,
+        "governance/budget-and-drift.md",
+        (
+            "## Two-level Autopilot budget",
+            "### Implementation files",
+            "### Governance files",
+            "max_governance_files_changed",
+            "time floor",
+            "same invocation",
+            "## Budget-only partial adoption",
+            "Another active owner is a concurrency boundary",
+        ),
+        errors,
+    )
+    require_phrases(
+        root,
+        "workflows/resume.md",
+        (
+            "Normal Autopilot Budget Window rollover must continue in the same invocation",
+            "Do not use `resume` as a workaround for ordinary Window rollover",
+        ),
+        errors,
+    )
+    require_phrases(
+        root,
+        "templates/autopilot-run.md",
+        (
+            "## Session hard budget",
+            "## Current Window budget",
+            "## Window ledger",
+            "Implementation files",
+            "Governance files",
+            "Verification floor minutes",
+            "Invocation owner/last heartbeat",
+        ),
+        errors,
+    )
+
+
 def main() -> int:
     root = Path(__file__).resolve().parent.parent
     errors: list[str] = []
@@ -291,6 +368,7 @@ def main() -> int:
     validate_links(root, errors)
     validate_templates(root, errors)
     validate_drift_mode_registry(root, errors)
+    validate_continuous_autopilot_contract(root, errors)
 
     for mode, (relative, marker) in MODE_WORKFLOWS.items():
         path = root / relative
