@@ -1,7 +1,7 @@
 # Software Evolution Skill 创建与发布
 
 - 更新时间：2026-07-26
-- 线程状态：正在发布到 GitHub
+- 线程状态：已完成
 - 远端仓库：`myh1090052425/codex-skills`
 
 ## 线程目标
@@ -16,6 +16,8 @@
 - 已提供根目录 `README.md`、`install.py`、仓库文档、测试和 GitHub Actions 工作流。
 - 已初始化 `main` 分支并创建首个提交：`440d3c5 feat: 创建 AI Software Evolution Agent Skill`。
 - 已确认目标 GitHub 仓库为空，当前认证用户具有管理员权限。
+- 已推送 `main` 到 GitHub，远端根目录包含 `.github`、`docs`、`software-evolution`、`tests`、`README.md` 和 `install.py`。
+- GitHub Actions `Validate Skill` 已完成并通过。
 
 ## 阻塞
 
@@ -23,10 +25,8 @@
 
 ## 下一步
 
-1. 提交仓库文档和 `docs/state/`。
-2. 推送 `main` 到 GitHub。
-3. 验证远端根目录、`docs/` 和 `software-evolution/` 内容。
-4. 确认 GitHub Actions 结果。
+1. 在真实项目中执行 `$software-evolution init`。
+2. 根据真实运行证据继续迭代 Skill。
 
 ## 验证结果
 
@@ -36,6 +36,8 @@
 - 仓库测试：2 个测试全部通过。
 - 工程记忆初始化：首次创建 3 个文件；重复执行不覆盖已有文件。
 - 安装器：dry-run、软链接安装、复制安装和已有正确安装识别均通过。
+- 远端目录检查：`docs/state/`、`software-evolution/`、根目录文档和测试文件均可读取。
+- GitHub Actions：`Validate Skill` 运行成功。
 
 ## 相关文件
 
