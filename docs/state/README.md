@@ -10,10 +10,10 @@
 
 ## 活跃线程索引
 
-- [Software Evolution 去除人为数量配额](2026-07-26-software-evolution-remove-artificial-quotas-v1.md) — 待发布；连续自治、语义批次、旧配置兼容、35 项测试和多角度 Review 已完成，等待 Commit、Push 与 GitHub Actions。
 
 ## 已完成/归档
 
+- [Software Evolution 去除人为数量配额](2026-07-26-software-evolution-remove-artificial-quotas-v1.md) — 2026-07-26 完成；人工文件/Finding/Cycle/Batch/Window 配额已退出有效控制面，连续自治、旧配置兼容、35 项测试、多角度 Review 与 GitHub Actions 已通过。
 - [Software Evolution 连续预算与自动续跑修复](2026-07-26-software-evolution-continuous-budget-v1.md) — 2026-07-26 完成；该版本的双层数量预算后来被确认违背持续自治目标，已由“去除人为数量配额”线程废弃并迁移。
 - [Software Evolution 单命令 Autopilot 与睡后编程](2026-07-26-software-evolution-autopilot-v1.md) — 2026-07-26 完成；零前置 Autopilot、Overnight 睡后编程、RUN/BATCH 恢复、八角度 Review、25 项测试和 GitHub Actions 已完成。
 - [Software Evolution 控制面与治理闭环升级](2026-07-26-software-evolution-control-plane-v1.md) — 2026-07-26 完成；九种模式、只读/可写双出口、发布与运行治理、恢复预算、七角度 Review、19 项测试和 GitHub Actions 已完成。
@@ -31,6 +31,7 @@
 
 ## 最近提交
 
+- `10c74ec fix: 移除 Autopilot 人为数量配额`
 - `6c96a79 fix: 修复 Autopilot 预算记账与自动续跑`
 - `d793893 feat: 实现单命令 Autopilot 与睡后编程`
 - `f53a34c docs: 记录软件演进控制面发布结果`

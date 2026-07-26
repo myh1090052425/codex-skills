@@ -2,7 +2,7 @@
 
 - 更新时间：2026-07-26
 - 线程目标：纠正将文件数、Cycle、Window、Finding 和 Repair Batch 数量作为 Autopilot 硬停止条件的设计错误，使自主治理由风险、证据、可回滚性和验证能力控制，而不是按计数停止。
-- 状态：待发布
+- 状态：已完成
 
 ## 进展
 
@@ -44,16 +44,21 @@
 - `python3 -m unittest discover -s tests -v`：35/35 通过。
 - 根文档链接、Skill 内链接、可移植性/Secret 扫描、tracked 垃圾文件扫描和 `git diff --check`：通过。
 
+## 发布结果
+
+- 功能提交：`10c74ec fix: 移除 Autopilot 人为数量配额`。
+- 已推送至 `origin/main`，远端提交与本地一致。
+- GitHub Actions `Validate Skill`：成功。
+- Workflow Run：`30214143236`（`https://github.com/myh1090052425/codex-skills/actions/runs/30214143236`）。
+
 ## 阻塞
 
-- 当前无实现阻塞。
-- GitHub Commit、Push 和远端 `Validate Skill` 尚待完成。
+- 当前无阻塞。
 
 ## 下一步
 
-1. 复核最终 Diff 和 Staged Scope。
-2. 使用中文 Commit Message 提交并推送 `main`。
-3. 确认 GitHub Actions `Validate Skill` 成功后归档本线程。
+1. 在真实项目中继续使用普通 `$software-evolution` 验证连续自治和宿主中断后的自动接管。
+2. 若出现新的真实停工案例，优先检查权威、验证、漂移和 Host 生命周期证据，不再增加人工数量配额。
 
 ## 相关文件
 
