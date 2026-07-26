@@ -15,6 +15,7 @@ docs/software-evolution/
 ├── health-baseline.json
 ├── decisions/       # DEC-*.md
 ├── batches/         # BATCH-*.md
+├── runs/            # RUN-*.md
 └── reports/
     ├── audit/
     ├── verification/
@@ -30,7 +31,8 @@ If repository rules define equivalent durable sources, map to them instead of cr
 - `FIND-*`: evidence-backed finding.
 - `DEBT-*`: tracked remediation obligation.
 - `DEC-*`: decision/authority record.
-- `BATCH-*`: repair/deep checkpoint.
+- `BATCH-*`: one repair/deep/autopilot batch checkpoint.
+- `RUN-*`: parent Autopilot/Overnight execution ledger and resume identity.
 - `VER-*`: independent verification.
 - `REL-*`: release readiness review.
 - `FIT-*`: architecture fitness function.
@@ -82,4 +84,4 @@ Before writing any durable asset:
 
 ## End-of-run update
 
-Writable batches update only facts, decisions, debt statuses, capability ownership, health evidence, and next action supported by verification. Keep detailed command logs in the corresponding report/checkpoint or repository state convention.
+Writable batches update only facts, decisions, debt statuses, capability ownership, health evidence, and next action supported by verification. Keep detailed command logs in the corresponding report/checkpoint/run ledger or repository state convention.

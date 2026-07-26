@@ -17,19 +17,30 @@ scripts/                 # 低自由度、可测试的控制脚本
 
 `SKILL.md` 只承担导航和核心契约；详细规则按当前任务加载，避免每次把全部治理知识塞入上下文。
 
-## 3. 先分模式，再执行
+## 3. 默认先 Autopilot，再按需分模式
 
-最重要的设计是读写控制：
+无参数 `$software-evolution` 是完整 `autopilot`，而不是 `govern` 的别名。它不要求任何前置命令：控制面缺失时自动初始化，然后在同一运行中进入发现、修复、测试、验证和再扫描循环。
 
-| 模式 | 控制策略 |
-|---|---|
-| `init` | 仅创建/更新治理控制面，不改产品文件 |
-| `audit` / `verify` / `release-check` / `observe` | 严格只读；`--record` 仅允许报告持久化 |
-| `govern` / `repair` | 小批次、受风险和预算约束的写入 |
-| `deep` | 分片、受预算约束的修复波次 |
-| `resume` | 继承可证明的原模式，否则降级只读 |
+```text
+$software-evolution
+→ Auto-bootstrap when missing
+→ Model / Inspect / Prove / Prioritize
+→ Repair / Test / Verify / Re-scan
+→ Continue next safe batch
+→ RUN/BATCH checkpoint on stop
+```
 
-显式只读模式优先于“发现问题就修”的一般自治原则。这解决了两个风险：审计者同时成为修复者导致确认偏差，以及用户只想了解问题却获得意外改动。
+`overnight` 是更长的无人值守 Profile，使用隔离优先、有限 Deadline/Cycle/Batch/File Budget、最终 Verification Reserve 和 `RUN-*` 账本。
+
+其余模式是高级控制面：
+
+- `init` 只建立治理控制面。
+- `audit`、`verify`、`release-check`、`observe` 严格只读。
+- `govern`、`repair` 是用户定向的小批次写模式。
+- `deep` 是分片式深度治理。
+- `resume` 恢复 `RUN-*` 或 `BATCH-*`，无法证明原权限时降级只读。
+
+模式先确定允许做什么，再确定如何做，避免把只读审计隐式升级为 Repair，也避免把默认自主治理错误拆成用户手工编排。
 
 ## 4. 双出口治理闭环
 
@@ -153,9 +164,10 @@ Feature Flag、Fallback、Adapter、兼容分支、Dual Write 必须记录原因
 - `health-baseline.json`：质量门禁、关键流程、SLI/SLO、已知失败和观测缺口。
 - `decisions/DEC-*.md`：权威和选项。
 - `batches/BATCH-*.md`：可恢复批次和 Git 漂移元数据。
+- `runs/RUN-*.md`：Autopilot/Overnight 运行预算、批次账本、停止原因和恢复入口。
 - `reports/`：Audit、Verification、Release、Observation 证据。
 
-稳定 ID 让 Finding、Decision、Repair、Verification、Release 和 Resume 共享一个长期上下文。
+稳定 ID 让 Finding、Decision、Repair、Verification、Release、Autopilot 和 Resume 共享一个长期上下文。
 
 ## 9. 决策治理
 
@@ -186,7 +198,13 @@ Agent 不能猜时不只说“需要确认”，而是生成最小决策包：�
 
 Runtime Finding 必须记录环境、版本、窗口、过滤条件、样本/事件量、能力和替代解释。Correlation 不是 Root Cause。修复后定义观察窗口、目标、Guardrail 和 Rollback Threshold。
 
-## 13. 预算与恢复
+## 13. 睡后编程执行模型
+
+`autopilot` 是默认零前置多批循环；`overnight` 在其上增加长时预算、隔离优先和最终验证窗口。每次调用本身只授权配置允许的可逆 R1/R2 源码、测试和治理文件修改，不授权生产、部署、远端发布或 R3/R4 变更。
+
+无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。达到时间、循环、批次、文件、失败或验证预留边界时停止编辑，完成 aggregate verification，写入 `RUN-*` 和最新 `BATCH-*`，再提供精确 Resume 入口。
+
+## 14. 预算与恢复
 
 `.software-evolution.yml` 约束：范围项、Finding 数、修复批次、变更文件数和验证预留。验证预算先保留，发现和编辑不得消费完最后的验证能力。
 
@@ -200,7 +218,7 @@ Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、�
 
 只有 No Drift 和经确认的 Safe Drift 能直接继续。
 
-## 14. 自动修改安全与验收完整性
+## 15. 自动修改安全与验收完整性
 
 写入必须同时满足 Mode、Risk、Authority、Budget、Verification 五个 Gate。R3 使用兼容性分阶段方案，R4 在操作点显式批准。
 

@@ -17,7 +17,19 @@ CHECKPOINT_RE = re.compile(
     r"<!--\s*software-evolution-checkpoint\s*(\{.*?\})\s*-->", re.DOTALL
 )
 BATCH_ID_RE = re.compile(r"^BATCH-[A-Za-z0-9._-]+$")
-VALID_MODES = {"init", "audit", "govern", "repair", "verify", "deep", "release-check", "observe", "resume"}
+VALID_MODES = {
+    "autopilot",
+    "overnight",
+    "init",
+    "audit",
+    "govern",
+    "repair",
+    "verify",
+    "deep",
+    "release-check",
+    "observe",
+    "resume",
+}
 VALID_CLASSES = {
     "NO_DRIFT",
     "SAFE_DRIFT",

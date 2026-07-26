@@ -111,6 +111,34 @@ class CheckpointDriftTests(unittest.TestCase):
             app.write_text("VALUE = 3\n", encoding="utf-8")
             self.assertEqual("CONFLICTING_DRIFT", self.classify(repo, checkpoint))
 
+    def test_snapshot_accepts_autopilot_and_overnight_modes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="software-evolution-drift-modes-") as tmp:
+            repo = self.make_repo(Path(tmp))
+            for mode in ("autopilot", "overnight"):
+                with self.subTest(mode=mode):
+                    result = subprocess.run(
+                        [
+                            "python3",
+                            str(DRIFT),
+                            "--root",
+                            str(repo),
+                            "--snapshot",
+                            "--batch-id",
+                            f"BATCH-{mode.upper()}",
+                            "--mode",
+                            mode,
+                            "--scope-path",
+                            "src/app.py",
+                        ],
+                        text=True,
+                        capture_output=True,
+                        check=True,
+                    )
+                    metadata = json.loads(result.stdout)
+                    self.assertEqual(mode, metadata["mode"])
+                    checkpoint = self.checkpoint(Path(tmp), metadata)
+                    self.assertEqual("NO_DRIFT", self.classify(repo, checkpoint))
+
     def test_snapshot_accepts_repository_root_scope(self) -> None:
         with tempfile.TemporaryDirectory(prefix="software-evolution-drift-root-scope-") as tmp:
             repo = self.make_repo(Path(tmp))

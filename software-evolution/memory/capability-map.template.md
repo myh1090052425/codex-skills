@@ -38,6 +38,6 @@ Classification values:
 
 ## New capability decisions
 
-| Date | Requested capability | Search terms and existing candidates | Decision: reuse/extend/adapter/new | Canonical owner/boundary | Reason | Verification | Related FIND/DEBT/DEC/BATCH IDs |
+| Date | Requested capability | Search terms and existing candidates | Decision: reuse/extend/adapter/new | Canonical owner/boundary | Reason | Verification | Related FIND/DEBT/DEC/RUN/BATCH IDs |
 |---|---|---|---|---|---|---|---|
 | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |

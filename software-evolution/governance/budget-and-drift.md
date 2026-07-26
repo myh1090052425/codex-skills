@@ -14,7 +14,8 @@ Core controls:
 - `budget.max_repair_batches`
 - `budget.max_files_changed`
 - `budget.reserve_verification_minutes`
-- corresponding `deep_budget` limits
+- corresponding `deep_budget` and `overnight_budget` limits
+- `autopilot.max_cycles`, `autopilot.max_consecutive_failed_batches`, and mandatory per-batch checkpoints
 - `readonly.allow_record_persistence` (explicit `--record` is still required)
 - release gates, observation defaults, specialist routing, and fitness enforcement
 
@@ -29,7 +30,7 @@ Count:
 - One repair batch per independent root cause or contract boundary.
 - Every changed tracked file, including tests, docs, migrations, generated artifacts, and config.
 
-Do not evade limits by splitting one logical file or batch into artificial sub-items. Reserve verification capacity before editing. When the reserve would be consumed, stop discovery/editing and verify or checkpoint.
+For `autopilot`/`overnight`, also count one cycle per completed discover-select-repair-verify-rescan iteration and enforce runtime minutes conservatively. Do not evade limits by splitting one logical file or batch into artificial sub-items. Reserve verification capacity before editing. When the reserve would be consumed, stop discovery/editing and verify or checkpoint.
 
 ## Checkpoints
 

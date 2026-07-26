@@ -10,7 +10,7 @@ Statuses: `candidate`, `ready`, `in_progress`, `partial`, `blocked`, `verified`,
 
 ## Active debt
 
-| Debt ID | Priority | Status | Category | Problem/root cause | Evidence and affected scope | User/business/operational impact | Remediation | Acceptance and verification | Dependencies/decision gap | Related DEC/BATCH/FIND IDs | Detected/updated |
+| Debt ID | Priority | Status | Category | Problem/root cause | Evidence and affected scope | User/business/operational impact | Remediation | Acceptance and verification | Dependencies/decision gap | Related DEC/RUN/BATCH/FIND IDs | Detected/updated |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | DEBT-TBD | P3 | candidate | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | {{DATE}} |
 

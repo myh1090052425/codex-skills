@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 import re
@@ -15,6 +16,8 @@ REQUIRED_FILES = {
     "SKILL.md",
     "agents/openai.yaml",
     "workflows/common-loop.md",
+    "workflows/autopilot.md",
+    "workflows/overnight.md",
     "workflows/init.md",
     "workflows/audit.md",
     "workflows/govern.md",
@@ -25,6 +28,7 @@ REQUIRED_FILES = {
     "workflows/observe.md",
     "workflows/resume.md",
     "governance/mode-contracts.md",
+    "governance/unattended-execution.md",
     "governance/autonomy-and-risk.md",
     "governance/user-experience.md",
     "governance/code-quality-and-reliability.md",
@@ -50,6 +54,8 @@ REQUIRED_FILES = {
     "templates/decision-record.md",
     "templates/batch-checkpoint.md",
     "templates/specialist-handoff.md",
+    "templates/autopilot-run.md",
+    "templates/scheduled-overnight-task.md",
     "memory/architecture-memory.template.md",
     "memory/capability-map.template.md",
     "memory/technical-debt.template.md",
@@ -61,6 +67,8 @@ REQUIRED_FILES = {
     "scripts/check_checkpoint_drift.py",
 }
 MODE_WORKFLOWS = {
+    "autopilot": ("workflows/autopilot.md", "WRITE POLICY: BUDGETED_WRITE"),
+    "overnight": ("workflows/overnight.md", "WRITE POLICY: BUDGETED_WRITE"),
     "init": ("workflows/init.md", "WRITE POLICY: CONTROL_PLANE_ONLY"),
     "audit": ("workflows/audit.md", "WRITE POLICY: READ_ONLY"),
     "govern": ("workflows/govern.md", "WRITE POLICY: BOUNDED_WRITE"),
@@ -75,6 +83,9 @@ LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 CHECKPOINT_COMMENT_RE = re.compile(
     r"<!--\s*software-evolution-checkpoint\s*(\{.*?\})\s*-->", re.DOTALL
+)
+RUN_COMMENT_RE = re.compile(
+    r"<!--\s*software-evolution-run\s*(\{.*?\})\s*-->", re.DOTALL
 )
 LOCAL_PATH_RE = re.compile(r"(?:/Users/[^\s`]+|[A-Za-z]:\\\\Users\\\\[^\s`]+)")
 SECRET_MARKERS = ("-----BEGIN PRIVATE KEY-----", "-----BEGIN OPENSSH PRIVATE KEY-----")
@@ -182,6 +193,33 @@ def validate_templates(root: Path, errors: list[str]) -> None:
                 if metadata.get("schema_version") != 1:
                     errors.append("batch checkpoint schema_version must be 1")
 
+    run_template = root / "templates" / "autopilot-run.md"
+    if run_template.is_file():
+        match = RUN_COMMENT_RE.search(run_template.read_text(encoding="utf-8"))
+        if not match:
+            errors.append("autopilot run template has no parseable metadata comment")
+        else:
+            try:
+                metadata = json.loads(match.group(1))
+            except json.JSONDecodeError as exc:
+                errors.append(f"autopilot run metadata is invalid JSON: {exc}")
+            else:
+                required = {
+                    "schema_version",
+                    "run_id",
+                    "profile",
+                    "status",
+                    "branch",
+                    "head",
+                    "scope_paths",
+                    "latest_batch_id",
+                }
+                missing = sorted(required - set(metadata))
+                if missing:
+                    errors.append("autopilot run metadata missing fields: " + ", ".join(missing))
+                if metadata.get("schema_version") != 1:
+                    errors.append("autopilot run schema_version must be 1")
+
     config = root / "memory" / "software-evolution.config.template.yml"
     validator = root / "scripts" / "validate_project_config.py"
     if config.is_file() and validator.is_file():
@@ -200,6 +238,47 @@ def validate_templates(root: Path, errors: list[str]) -> None:
                 )
 
 
+def validate_drift_mode_registry(root: Path, errors: list[str]) -> None:
+    path = root / "scripts" / "check_checkpoint_drift.py"
+    if not path.is_file():
+        return
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except SyntaxError as exc:
+        errors.append(f"unable to parse drift checker mode registry: {exc}")
+        return
+
+    registered: set[str] | None = None
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == "VALID_MODES" for target in node.targets):
+            continue
+        try:
+            value = ast.literal_eval(node.value)
+        except (ValueError, TypeError, SyntaxError) as exc:
+            errors.append(f"unable to read drift checker VALID_MODES: {exc}")
+            return
+        if isinstance(value, set) and all(isinstance(item, str) for item in value):
+            registered = value
+        break
+
+    if registered is None:
+        errors.append("drift checker must declare a literal VALID_MODES set")
+        return
+
+    expected = set(MODE_WORKFLOWS)
+    if registered != expected:
+        missing = sorted(expected - registered)
+        extra = sorted(registered - expected)
+        details: list[str] = []
+        if missing:
+            details.append("missing=" + ",".join(missing))
+        if extra:
+            details.append("extra=" + ",".join(extra))
+        errors.append("drift checker mode registry differs from mode contracts: " + " ".join(details))
+
+
 def main() -> int:
     root = Path(__file__).resolve().parent.parent
     errors: list[str] = []
@@ -211,6 +290,7 @@ def main() -> int:
     skill_text = validate_frontmatter(root, errors)
     validate_links(root, errors)
     validate_templates(root, errors)
+    validate_drift_mode_registry(root, errors)
 
     for mode, (relative, marker) in MODE_WORKFLOWS.items():
         path = root / relative
@@ -222,6 +302,13 @@ def main() -> int:
             errors.append(f"SKILL.md does not mention mode: {mode}")
         if relative not in skill_text:
             errors.append(f"SKILL.md does not link workflow: {relative}")
+
+    if "`$software-evolution` or `autopilot [scope]`" not in skill_text:
+        errors.append("SKILL.md default invocation must route to autopilot")
+    if "No prerequisite command is required for the default route" not in skill_text:
+        errors.append("SKILL.md must declare zero-prerequisite default startup")
+    if "workflows/govern.md" in skill_text and "`$software-evolution` or `govern" in skill_text:
+        errors.append("SKILL.md must not map the no-argument command to govern")
 
     agent_yaml = root / "agents/openai.yaml"
     if agent_yaml.is_file():

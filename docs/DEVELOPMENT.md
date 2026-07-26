@@ -12,11 +12,13 @@
 
 ## 2. 当前结构契约
 
-Skill 必须包含九种 Workflow：
+Skill 必须包含十一种 Workflow：
 
 ```text
-init audit govern repair verify deep release-check observe resume
+autopilot overnight init audit govern repair verify deep release-check observe resume
 ```
+
+无参数入口必须映射 `autopilot`，且必须自动初始化缺失控制面；CI 应阻止再次把默认入口映射为 `govern` 或要求手工前置模式。
 
 Write Policy：
 
@@ -34,7 +36,7 @@ INHERITED_OR_READ_ONLY
 
 ### `bootstrap_project_memory.py`
 
-- 非覆盖式创建 `.software-evolution.yml`、四个基础 Memory 文件和报告/决策/批次目录。
+- 非覆盖式创建 `.software-evolution.yml`、四个基础 Memory 文件和报告/决策/批次/运行账本目录。
 - 使用独占创建避免并发覆盖。
 - `--dry-run` 不得产生文件或目录。
 
@@ -43,6 +45,7 @@ INHERITED_OR_READ_ONLY
 - 只支持两空格 Mapping + Scalar 的受限 YAML。
 - 拒绝重复/未知键、Tab、复杂 YAML、非小写 Boolean 和敏感键。
 - `observe.production_read_only` 必须为 `true`。
+- `autopilot.checkpoint_every_batch` 必须为 `true`，并校验 `overnight_budget` 的时间、循环、失败和验证预留。
 
 ### `check_checkpoint_drift.py`
 
@@ -98,7 +101,11 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
 - Drift 覆盖 No/Safe/Material/Conflicting/Unknown。
 - Symlink/Copy 安装仍有效。
 
-### 恢复与预算
+### Autopilot、睡后编程、恢复与预算
+
+- 默认命令无需 `init`/`audit`/`govern` 前置，自动 Bootstrap 后继续修复循环。
+- Overnight 有隔离、时间、循环、批次、文件、失败和最终验证门禁。
+- `RUN-*` 记录每批结果、停止原因和 Resume 入口。
 
 - Deep 在扫描前声明范围、Finding、批次、文件和验证预留。
 - Resume 对每种 Drift 有明确行为。
@@ -106,7 +113,7 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
 
 ### 文档一致性
 
-- SKILL、README、USAGE、DESIGN、Workflow 的模式名、读写语义和 Verdict 一致。
+- SKILL、README、USAGE、DESIGN、Workflow 的模式名、默认 Autopilot 路由、睡后编程边界、读写语义和 Verdict 一致。
 - 每个新增模式都有对应模板/报告出口。
 
 ### 可移植性与安全

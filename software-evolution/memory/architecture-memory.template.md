@@ -103,8 +103,8 @@
 |---|---|---|---|---|---|---|
 | FIT-TBD | TBD | TBD | advisory/governance/merge/release | TBD | not run | TBD |
 
-## 16. Active decisions and resumable batches
+## 16. Active decisions, runs, and resumable batches
 
 | ID | Type | Scope | Status | Authority/last passed gate | Next action |
 |---|---|---|---|---|---|
-| DEC-TBD/BATCH-TBD | decision/batch | TBD | TBD | TBD | TBD |
+| DEC-TBD/RUN-TBD/BATCH-TBD | decision/run/batch | TBD | TBD | TBD | TBD |

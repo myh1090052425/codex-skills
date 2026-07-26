@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -37,6 +38,7 @@ class RepositoryTests(unittest.TestCase):
                     "health-baseline.json",
                     "decisions",
                     "batches",
+                    "runs",
                     "reports",
                 },
             )
@@ -47,7 +49,7 @@ class RepositoryTests(unittest.TestCase):
             config = project / ".software-evolution.yml"
             self.assertTrue(config.is_file())
             self.assertIn("created_files=5", first.stdout)
-            self.assertIn("created_dirs=6", first.stdout)
+            self.assertIn("created_dirs=7", first.stdout)
             health = json.loads((memory / "health-baseline.json").read_text(encoding="utf-8"))
             self.assertEqual('sample-"project', health["project"])
             self.assertEqual('sample-"project', health["repository"])
@@ -78,7 +80,7 @@ class RepositoryTests(unittest.TestCase):
                 check=True,
             )
             self.assertIn("skipped_files=5", second.stdout)
-            self.assertIn("existing_dirs=6", second.stdout)
+            self.assertIn("existing_dirs=7", second.stdout)
             self.assertIn("SENTINEL", architecture.read_text(encoding="utf-8"))
             self.assertIn("SENTINEL", config.read_text(encoding="utf-8"))
 
@@ -149,9 +151,20 @@ class RepositoryTests(unittest.TestCase):
             self.assertFalse(copy_target.is_symlink())
             self.assertTrue((copy_target / "SKILL.md").is_file())
             self.assertTrue((copy_target / "workflows" / "audit.md").is_file())
+            self.assertTrue((copy_target / "workflows" / "autopilot.md").is_file())
+            self.assertTrue((copy_target / "workflows" / "overnight.md").is_file())
             self.assertTrue((copy_target / "scripts" / "check_checkpoint_drift.py").is_file())
             self.assertFalse(any(path.name == "__pycache__" for path in copy_target.rglob("*")))
             self.assertFalse(any(path.suffix == ".pyc" for path in copy_target.rglob("*")))
+
+    def test_autopilot_run_template_has_parseable_resume_metadata(self) -> None:
+        template = (SKILL / "templates" / "autopilot-run.md").read_text(encoding="utf-8")
+        match = re.search(r"<!--\s*software-evolution-run\s*(\{.*?\})\s*-->", template, re.DOTALL)
+        self.assertIsNotNone(match)
+        metadata = json.loads(match.group(1))
+        self.assertEqual(1, metadata["schema_version"])
+        self.assertEqual("RUN-TBD", metadata["run_id"])
+        self.assertIn("latest_batch_id", metadata)
 
     def test_skill_integrity_script(self) -> None:
         result = subprocess.run(
@@ -160,7 +173,7 @@ class RepositoryTests(unittest.TestCase):
             capture_output=True,
             check=True,
         )
-        self.assertIn("9 mode contracts", result.stdout)
+        self.assertIn("11 mode contracts", result.stdout)
 
 
 if __name__ == "__main__":

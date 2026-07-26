@@ -2,7 +2,7 @@
 
 `WRITE POLICY: READ_ONLY`
 
-Independently accept or reject an existing working-tree change, branch, commit, PR, repair batch, finding resolution, or debt closure.
+Independently accept or reject an existing working-tree change, branch, commit, PR, repair batch, Autopilot/Overnight run, finding resolution, or debt closure.
 
 ## Independence rule
 
@@ -10,7 +10,7 @@ Do not adopt the implementer's claims as the acceptance standard. Derive expecte
 
 ## Procedure
 
-1. Identify the exact target: repository, branch/base, commit SHA, diff, PR, `BATCH-*`, finding/debt ID, and environment.
+1. Identify the exact target: repository, branch/base, commit SHA, diff, PR, `RUN-*`, `BATCH-*`, finding/debt ID, and environment. For a run, verify every claimed batch plus aggregate checks and stop-state evidence.
 2. Reconstruct intended outcome, invariants, compatibility obligations, risk class, and required evidence.
 3. Inspect the actual diff and complete affected call paths, including negative and transitional behavior.
 4. Confirm the change addresses the root cause rather than only the symptom.

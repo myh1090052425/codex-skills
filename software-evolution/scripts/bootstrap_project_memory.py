@@ -21,6 +21,7 @@ CONFIG_TEMPLATE = "software-evolution.config.template.yml"
 CONTROL_DIRS = (
     "decisions",
     "batches",
+    "runs",
     "reports/audit",
     "reports/verification",
     "reports/release",

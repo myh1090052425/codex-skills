@@ -22,7 +22,7 @@ cd codex-skills
 python3 install.py
 ```
 
-默认创建用户级软链接，因此仓库更新会直接反映到 Codex。安装计划预览、复制安装和自定义目录：
+默认创建用户级软链接，因此仓库更新会直接反映到 Codex。Codex 通常会自动检测 Skill 变更；如果当前界面没有出现更新，再重启 Codex。安装计划预览、复制安装和自定义目录：
 
 ```bash
 python3 install.py --dry-run
@@ -32,40 +32,72 @@ python3 install.py --target ~/.agents/skills/software-evolution
 
 安装器不会覆盖已有的不同目录或软链接。
 
-## 触发方式
+## 一个命令直接启动
 
-在目标项目中打开 Codex 会话，直接输入：
+在任何目标项目中打开 Codex，直接输入：
 
 ```text
-$software-evolution init
-$software-evolution audit [scope]
-$software-evolution                 # 等同 govern
-$software-evolution govern [scope]
-$software-evolution repair [FIND/DEBT/DEC/scope]
-$software-evolution verify [branch/commit/PR/BATCH/id]
-$software-evolution deep [scope]
-$software-evolution release-check [branch/commit/release]
-$software-evolution observe [flow/service]
-$software-evolution resume [BATCH/id]
+$software-evolution
+```
+
+这就是默认 `autopilot`。**不需要先执行 `init`、`audit` 或 `govern`。** Agent 会在同一次运行中自动：
+
+```text
+检测/初始化治理控制面
+→ 建立系统与业务认知
+→ 发现并证明问题
+→ 判断优先级
+→ 选择安全修复批次
+→ 修改代码
+→ 补充测试
+→ 自动验证
+→ 重扫调用方、能力、规则与架构
+→ 继续下一批
+→ 达到安全停止条件后保存 RUN/BATCH 检查点
+```
+
+需要更长的无人值守“睡后编程”窗口时：
+
+```text
+$software-evolution overnight
+$software-evolution overnight services/order
 ```
 
 如果宿主把 Slash Command 作为文本传递，也可以写 `/software-evolution ...`。还可以在 `/skills` 中选择 **AI Software Evolution Agent**。
 
-## 九种模式
+高级控制入口仍然保留：
+
+```text
+$software-evolution autopilot [scope]
+$software-evolution overnight [scope]
+$software-evolution init
+$software-evolution audit [scope]
+$software-evolution govern [scope]
+$software-evolution repair [FIND/DEBT/DEC/scope]
+$software-evolution verify [branch/commit/PR/RUN/BATCH/id]
+$software-evolution deep [scope]
+$software-evolution release-check [branch/commit/release]
+$software-evolution observe [flow/service]
+$software-evolution resume [RUN/BATCH/id]
+```
+
+## 十一种模式
 
 | 模式 | 目标 | 默认写入行为 |
 |---|---|---|
-| `init` | 建立控制面、系统模型、能力地图和基线 | 仅创建/更新治理文件，不改产品 |
+| `autopilot`（无参数默认） | 自动初始化并持续发现、修复、测试、验证、重扫 | 预算内多批 R1/R2 自动修复 |
+| `overnight` | 长时间无人值守治理 | 时间、循环、批次、文件和验证预算内执行 |
+| `init` | 只建立控制面、系统模型、能力地图和基线 | 仅创建/更新治理文件，不改产品 |
 | `audit` | 只读证明问题、分级、形成修复/决策输入 | 不修改；`--record` 才持久化报告 |
-| `govern` | 治理近期或高价值范围 | 小批次 R1/R2 自动修复 |
+| `govern` | 手工选择范围的日常治理 | 小批次 R1/R2 自动修复 |
 | `repair` | 定向修复已证明问题 | 目标化修改、补测试、验证 |
 | `verify` | 独立验收改动、PR、分支或债务关闭 | 不修改；失败交回 repair |
 | `deep` | 分片式深度治理 | 受范围、批次、文件和验证预算限制 |
 | `release-check` | 发布、迁移、混合版本、回滚就绪检查 | 严格只读，不部署 |
 | `observe` | 用日志、指标、Trace、告警和反馈校正治理 | 生产只读，不改告警/配置/数据 |
-| `resume` | 从批次检查点安全恢复 | 继承原模式；无法证明时降级只读 |
+| `resume` | 从 `RUN-*`/`BATCH-*` 安全恢复 | 继承原模式；无法证明时降级只读 |
 
-`audit`、`verify`、`release-check`、`observe` 不会因为发现了“明显问题”而偷偷修改代码。它们会输出稳定 ID 和下一条 `repair` 命令。
+`init`、`audit`、`govern`、`repair` 是高级控制面，不是默认命令的前置步骤。只读模式不会因为发现“明显问题”而偷偷修改代码。
 
 ## 治理闭环
 
@@ -82,11 +114,17 @@ Orient → Model → Scope → Inspect → Prove → Prioritize → Decide
 可写模式 → Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint
 ```
 
-可写模式会在风险、授权、预算和验证条件满足时自主完成低风险修复；不具备完整证据时宁可形成 Finding、Decision、Specialist Handoff 或 Checkpoint，也不会伪造完成。
+可写模式会在风险、授权、预算和验证条件满足时自主完成低风险修复；`autopilot`/`overnight` 在一批完成后会继续选择下一批，而不是返回让用户再次下命令。不具备完整证据时形成 Finding、Decision、Specialist Handoff 或 Checkpoint，并继续其他独立安全工作。
+
+## 睡后编程与无人值守边界
+
+`overnight` 使用独立 `RUN-*` 账本、较长预算和最终验证预留。它优先在隔离 worktree 中运行；遇到业务决策、凭证、环境或高风险问题时记录并跳过，继续其他安全任务，不会一直等用户回复。
+
+无人值守授权不包括部署、生产迁移/数据修复、Flag/告警/权限/凭证、远端发布、Force Push、历史重写或 R3/R4 契约变更。实际使用本地 Scheduled Tasks 时，电脑需要保持开机且 Codex/ChatGPT 桌面应用保持运行。
 
 ## 项目控制面
 
-首次执行 `init` 默认非覆盖式创建：
+首次执行默认 `autopilot`/`overnight`（或显式 `init`）会非覆盖式创建：
 
 ```text
 .software-evolution.yml
@@ -98,6 +136,7 @@ docs/software-evolution/
 ├── health-baseline.json
 ├── decisions/
 ├── batches/
+├── runs/
 └── reports/
     ├── audit/
     ├── verification/
@@ -105,7 +144,7 @@ docs/software-evolution/
     └── observation/
 ```
 
-稳定 ID：`CAP-*`、`FIND-*`、`DEBT-*`、`DEC-*`、`BATCH-*`、`VER-*`、`REL-*`、`FIT-*`。
+稳定 ID：`CAP-*`、`FIND-*`、`DEBT-*`、`DEC-*`、`BATCH-*`、`RUN-*`、`VER-*`、`REL-*`、`FIT-*`。
 
 `.software-evolution.yml` 控制最大风险等级、范围、Finding 数、修复批次、变更文件数、验证预留、只读报告持久化、发布门禁、观察窗口、专业路由和架构适应度检查。配置只能缩小自治权限，不能绕过平台、仓库或生产安全规则。
 

@@ -79,7 +79,7 @@ Applies to `audit`, `verify`, `release-check`, `observe`, and any `resume` that 
 
 ## Writable exit
 
-Applies to `govern`, `repair`, budgeted repair waves in `deep`, and a safely resumed writable batch.
+Applies to `autopilot`, `overnight`, `govern`, `repair`, budgeted repair waves in `deep`, and a safely resumed writable batch.
 
 ### 7. Form one coherent batch
 
@@ -117,6 +117,7 @@ Stop the same failed hypothesis after three attempts. Do not start another repai
 - Update capability/architecture memory when ownership, contracts, rules, or runtime facts changed.
 - Update health baseline only from measured evidence.
 - Persist the exact verification status, remaining work, Git identity, and next safe action in the batch checkpoint.
+- In `autopilot`/`overnight`, update the parent `RUN-*` ledger and immediately continue with another fully affordable safe batch; one successful repair is not a stop condition.
 
 ## Stop conditions
 

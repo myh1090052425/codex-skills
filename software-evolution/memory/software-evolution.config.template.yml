@@ -7,6 +7,11 @@ autonomy:
   max_risk: R2
   allow_product_writes: true
 
+autopilot:
+  max_cycles: 4
+  max_consecutive_failed_batches: 2
+  checkpoint_every_batch: true
+
 budget:
   max_scope_items: 60
   max_findings: 12
@@ -20,6 +25,16 @@ deep_budget:
   max_repair_batches: 3
   max_files_changed: 24
   reserve_verification_minutes: 30
+
+overnight_budget:
+  max_runtime_minutes: 480
+  max_cycles: 12
+  max_scope_items: 500
+  max_findings: 80
+  max_repair_batches: 8
+  max_files_changed: 60
+  max_consecutive_failed_batches: 2
+  reserve_verification_minutes: 45
 
 readonly:
   allow_record_persistence: true

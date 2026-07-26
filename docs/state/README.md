@@ -10,7 +10,7 @@
 
 ## 活跃线程索引
 
-- 当前无活跃线程。
+- [Software Evolution 单命令 Autopilot 与睡后编程](2026-07-26-software-evolution-autopilot-v1.md) — 本地实现与 25 项测试已完成；待提交、Push 和 GitHub Actions 确认。
 
 ## 已完成/归档
 
@@ -19,9 +19,10 @@
 
 ## 候选下一步
 
-1. 在真实项目中分别前向验证 `audit`、`govern`、`verify`、`release-check` 和 `resume`。
-2. 根据真实项目反馈迭代治理规则、风险阈值、预算默认值和专项 Skill 路由。
-3. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
+1. 提交并发布默认单命令 Autopilot 与 Overnight 无人值守能力，确认 GitHub Actions。
+2. 在真实项目中前向验证 `$software-evolution`、`overnight`、`verify RUN-*` 和 `resume RUN-*`。
+3. 根据真实项目反馈迭代治理规则、风险阈值、预算默认值和专项 Skill 路由。
+4. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
 
 ## 阻塞
 

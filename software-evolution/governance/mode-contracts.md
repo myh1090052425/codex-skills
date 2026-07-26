@@ -18,6 +18,8 @@ Resolve the marker before running commands.
 
 | Mode | Product code/tests | Project config/memory | Recorded governance artifacts | Data/external/production | Git/remote |
 |---|---|---|---|---|---|
+| `autopilot` | Budgeted R1/R2 | Auto-create/update relevant control plane, memory, run ledger, checkpoints | Yes | No production mutation | Local inspection only; commit/push only when separately requested |
+| `overnight` | Time/cycle-budgeted R1/R2 | Auto-create/update control plane, `RUN-*`, memory, checkpoints | Yes | No production mutation | Prefer isolated worktree; no remote publication without separate approval |
 | `init` | No | Create/update governance control-plane files only | Initialization result | Read-only; disposable isolated test state only when needed | No commit/push unless separately requested |
 | `audit` | No | No | Only with `--record`/explicit request | Read-only; avoid mutating test commands | No mutation |
 | `govern` | Bounded R1/R2 | Update relevant memory/checkpoint | Yes when repository convention requires | No production mutation | Local Git inspection; commit/push only when requested |
@@ -43,9 +45,9 @@ It may run isolated/local checks that create only disposable ignored artifacts w
 
 ## Bounded writes
 
-If `autonomy.allow_product_writes` is `false`, treat `govern`, `repair`, and `deep` as read-only regardless of their normal contract.
+If `autonomy.allow_product_writes` is `false`, treat `autopilot`, `overnight`, `govern`, `repair`, and `deep` as read-only regardless of their normal contract.
 
-A writable mode may edit only the declared coherent batch. Before the first edit, require:
+A writable mode may edit only the declared coherent batch. `autopilot` and `overnight` may execute multiple batches, but each batch must independently satisfy the gates and update its `RUN-*` ledger. Before the first edit, require:
 
 - Proven problem and authoritative expected behavior.
 - Known affected callers and protected boundaries.

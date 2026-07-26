@@ -30,7 +30,11 @@ class ProjectConfigTests(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertIn("OK:", result.stdout)
-        self.assertIn("allow_record_persistence: true", TEMPLATE.read_text(encoding="utf-8"))
+        template = TEMPLATE.read_text(encoding="utf-8")
+        self.assertIn("allow_record_persistence: true", template)
+        self.assertIn("checkpoint_every_batch: true", template)
+        self.assertIn("overnight_budget:", template)
+        self.assertIn("max_runtime_minutes: 480", template)
 
     def test_rejects_unknown_duplicate_bad_boolean_and_sensitive_keys(self) -> None:
         cases = {
@@ -43,6 +47,7 @@ class ProjectConfigTests(unittest.TestCase):
             "production-write": "version: 1\nobserve:\n  production_read_only: false\n",
             "escaping-memory": "version: 1\nmemory_dir: ../outside\n",
             "absolute-memory": "version: 1\nmemory_dir: /tmp/outside\n",
+            "no-unattended-checkpoint": "version: 1\nautopilot:\n  checkpoint_every_batch: false\n",
         }
         for name, content in cases.items():
             with self.subTest(name=name):

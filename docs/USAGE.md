@@ -8,7 +8,7 @@ cd codex-skills
 python3 install.py
 ```
 
-默认安装为用户级软链接。拉取仓库更新后，新会话会直接使用新版本。
+默认安装为用户级软链接。拉取仓库更新后 Codex 通常会自动检测新版本；如果 Skill 列表或当前界面没有刷新，再重启 Codex。
 
 ```bash
 python3 install.py --dry-run   # 仅查看
@@ -18,15 +18,15 @@ python3 install.py --target ~/.agents/skills/software-evolution
 
 安装器不会覆盖不同的既有安装。
 
-## 2. 第一次在项目中使用
+## 2. 第一次及以后使用
 
-在目标项目根目录打开 Codex 会话：
+在目标项目根目录打开 Codex，第一次和以后都只需要：
 
 ```text
-$software-evolution init
+$software-evolution
 ```
 
-Agent 会读取仓库规则和必要上下文，建立控制面：
+默认进入 `autopilot`。控制面不存在时，Agent 会自动非覆盖式创建并在同一次运行中继续建立认知、审计、修复、补测试、验证和再扫描；**不会要求用户再执行 `init → audit → govern`。**
 
 ```text
 .software-evolution.yml
@@ -37,21 +37,40 @@ docs/software-evolution/
 ├── health-baseline.json
 ├── decisions/
 ├── batches/
+├── runs/
 └── reports/{audit,verification,release,observation}/
 ```
 
-Bootstrap 脚本只创建缺失文件和目录，不覆盖既有内容；Init Agent 会在重新读取后合并系统证据到治理文件，但不修改产品代码。
-
-随后通常执行：
+需要睡后编程时执行：
 
 ```text
-$software-evolution audit
-$software-evolution govern
+$software-evolution overnight
 ```
 
-也可以在 `/skills` 中选择 **AI Software Evolution Agent**。`/software-evolution ...` 在宿主作为普通文本传递时与 `$software-evolution ...` 等价。
+它使用有限的时间、循环、批次、文件和验证预算持续执行，遇到需要决定或批准的项目会记录并跳过，继续其他安全工作。也可以在 `/skills` 中选择 **AI Software Evolution Agent**。`/software-evolution ...` 在宿主作为普通文本传递时与 `$software-evolution ...` 等价。
 
 ## 3. 模式选择
+
+### `autopilot [scope]`：默认单命令持续治理
+
+```text
+$software-evolution
+$software-evolution autopilot
+$software-evolution autopilot src/orders
+```
+
+零前置启动：缺少控制面时自动初始化，然后循环执行建模、发现、证明、优先级、修复、测试、验证、复扫和记忆更新。完成一批后继续下一批，直到安全工作耗尽、预算不足、全部剩余项被阻塞或运行被中断。
+
+### `overnight [scope]`：睡后编程
+
+```text
+$software-evolution overnight
+$software-evolution overnight services/payment
+```
+
+使用 `overnight_budget`、隔离 worktree 优先策略、`RUN-*` 账本和最终验证预留执行长时间无人值守治理。不会等待常规确认；需要业务权威、生产操作、远端发布或 R3/R4 变更时记录并跳过。
+
+本地 Scheduled Task 运行期间需要电脑保持开机且 Codex/ChatGPT 桌面应用保持运行。建议先人工观察前几次运行，再逐步放大预算。
 
 ### `init`：建立系统认知
 
@@ -79,10 +98,9 @@ $software-evolution audit checkout-flow --record
 - `SPECIALIST_REQUIRED`
 - `INSUFFICIENT_EVIDENCE`
 
-### `govern [scope]`：日常自主治理
+### `govern [scope]`：手工范围治理
 
 ```text
-$software-evolution
 $software-evolution govern
 $software-evolution govern src/orders
 ```
@@ -140,9 +158,10 @@ $software-evolution observe order-worker --record
 
 将关键流程映射到 SLI/SLO、日志、指标、Trace、告警、队列/数据库和用户反馈，识别静默失败、误报成功和告警盲区。生产默认只读；不会修改告警、Dashboard、Flag、配置或数据。
 
-### `resume [BATCH/id]`：恢复中断批次
+### `resume [RUN/BATCH/id]`：恢复中断运行或批次
 
 ```text
+$software-evolution resume RUN-20260726-01
 $software-evolution resume BATCH-021
 ```
 
@@ -154,7 +173,7 @@ $software-evolution resume BATCH-021
 - `CONFLICTING_DRIFT`：停止旧路径并解决冲突或新建批次。
 - `UNKNOWN`：无法证明原上下文，降级只读。
 
-## 4. Scope 和稳定 ID
+## 4. Scope、运行账本和稳定 ID
 
 Scope 可以是：文件、目录、模块、页面、业务流程、Capability、Finding、Debt、Decision、Batch、分支、Commit、PR、Release 或服务。
 
@@ -172,6 +191,8 @@ Scope 可以是：文件、目录、模块、页面、业务流程、Capability�
 使用 ID 能避免跨会话重新解释问题。
 
 ## 5. 项目配置
+
+`autopilot` 控制默认循环次数、连续失败上限和每批强制 Checkpoint；`overnight_budget` 额外控制最长运行分钟、循环、批次、文件和最终验证预留。
 
 `.software-evolution.yml` 使用受限 YAML（仅 Mapping + Scalar），可控制：
 

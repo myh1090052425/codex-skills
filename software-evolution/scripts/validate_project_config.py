@@ -33,8 +33,23 @@ SCHEMA: dict[str, Any] = {
         "max_risk": ("risk", None),
         "allow_product_writes": ("bool", None),
     },
+    "autopilot": {
+        "max_cycles": ("int", 1),
+        "max_consecutive_failed_batches": ("int", 1),
+        "checkpoint_every_batch": ("required_true", None),
+    },
     "budget": BUDGET_SCHEMA,
     "deep_budget": BUDGET_SCHEMA,
+    "overnight_budget": {
+        "max_runtime_minutes": ("int", 1),
+        "max_cycles": ("int", 1),
+        "max_scope_items": ("int", 1),
+        "max_findings": ("int", 1),
+        "max_repair_batches": ("int", 0),
+        "max_files_changed": ("int", 0),
+        "max_consecutive_failed_batches": ("int", 1),
+        "reserve_verification_minutes": ("int", 0),
+    },
     "readonly": {"allow_record_persistence": ("bool", None)},
     "release": {
         "require_required_checks": ("bool", None),
@@ -198,6 +213,9 @@ def validate_value(path: str, value: Any, rule: tuple[str, Any], errors: list[st
     elif kind == "readonly_true":
         if value is not True:
             errors.append(f"{path} must be true; project config cannot authorize production writes")
+    elif kind == "required_true":
+        if value is not True:
+            errors.append(f"{path} must be true; unattended runs require per-batch checkpoints")
     elif kind == "int":
         if type(value) is not int or value < constraint:
             errors.append(f"{path} must be an integer >= {constraint}")
