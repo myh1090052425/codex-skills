@@ -10,19 +10,19 @@
 
 ## 活跃线程索引
 
-- [Software Evolution 单命令 Autopilot 与睡后编程](2026-07-26-software-evolution-autopilot-v1.md) — 本地实现与 25 项测试已完成；待提交、Push 和 GitHub Actions 确认。
+- 当前无活跃线程。
 
 ## 已完成/归档
 
+- [Software Evolution 单命令 Autopilot 与睡后编程](2026-07-26-software-evolution-autopilot-v1.md) — 2026-07-26 完成；零前置 Autopilot、Overnight 睡后编程、RUN/BATCH 恢复、八角度 Review、25 项测试和 GitHub Actions 已完成。
 - [Software Evolution 控制面与治理闭环升级](2026-07-26-software-evolution-control-plane-v1.md) — 2026-07-26 完成；九种模式、只读/可写双出口、发布与运行治理、恢复预算、七角度 Review、19 项测试和 GitHub Actions 已完成。
 - [Software Evolution Skill 创建与发布](2026-07-26-software-evolution-skill-local.md) — 2026-07-26 完成；Skill、仓库文档、测试、状态文件和 CI 已发布到 GitHub。
 
 ## 候选下一步
 
-1. 提交并发布默认单命令 Autopilot 与 Overnight 无人值守能力，确认 GitHub Actions。
-2. 在真实项目中前向验证 `$software-evolution`、`overnight`、`verify RUN-*` 和 `resume RUN-*`。
-3. 根据真实项目反馈迭代治理规则、风险阈值、预算默认值和专项 Skill 路由。
-4. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
+1. 在真实项目中前向验证 `$software-evolution`、`overnight`、`verify RUN-*` 和 `resume RUN-*`。
+2. 根据真实项目反馈迭代治理规则、风险阈值、预算默认值和专项 Skill 路由。
+3. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
 
 ## 阻塞
 
@@ -30,10 +30,10 @@
 
 ## 最近提交
 
+- `d793893 feat: 实现单命令 Autopilot 与睡后编程`
+- `f53a34c docs: 记录软件演进控制面发布结果`
 - `462fce0 feat: 升级软件演进 Agent 控制面`
 - `e9dfc3e docs: 更新 GitHub 发布状态`
-- `dc004c6 docs: 补充使用说明和项目状态`
-- `440d3c5 feat: 创建 AI Software Evolution Agent Skill`
 
 ## 关键决策
 

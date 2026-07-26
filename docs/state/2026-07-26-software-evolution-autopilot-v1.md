@@ -2,7 +2,7 @@
 
 - 更新时间：2026-07-26
 - 线程目标：纠正默认入口设计，使 `$software-evolution`/`/software-evolution` 在任何项目中自动初始化控制面、建立认知、发现并修复问题、补测试、验证、再扫描并持续执行安全批次；补充 `overnight` 无人值守运行契约。
-- 状态：本地实现与验证完成，待 GitHub 发布和 CI 确认
+- 状态：已完成并发布
 
 ## 进展
 
@@ -27,13 +27,13 @@
 
 ## 阻塞
 
-- 当前无实现阻塞；只待 Commit、Push 和 GitHub Actions 确认。
+- 当前无阻塞。
 
 ## 下一步
 
-1. 提交并推送本轮 Skill、文档、测试和状态文件。
-2. 确认 GitHub Actions `Validate Skill` 成功。
-3. 在真实业务项目中前向验证默认 `$software-evolution` 和 `$software-evolution overnight`。
+1. 在真实业务项目中前向验证默认 `$software-evolution` 和 `$software-evolution overnight`。
+2. 验证 `verify RUN-*`、`resume RUN-*` 和跨会话 Drift 恢复。
+3. 根据真实运行反馈调整预算、风险阈值和专项 Skill 路由。
 
 ## 验证结果
 
@@ -45,6 +45,8 @@
 - `git diff --check`：通过。
 - Markdown 本地链接和表格结构：通过。
 - 可移植性、敏感信息和 tracked cache/generated artifact 检查：通过。
+- 主提交：`d793893 feat: 实现单命令 Autopilot 与睡后编程`，已推送 `origin/main`。
+- GitHub Actions：`Validate Skill` Run `30207427651`，结论 `success`。
 
 ## 相关文件
 
@@ -68,4 +70,4 @@
 - `init`、`audit`、`govern`、`repair` 等模式继续保留，但仅作为高级控制面。
 - 睡后编程只允许可证明、可回滚、可验证的 R1/R2 源码批次；不得把无人值守授权扩展到部署、生产写入、权限、迁移或远端发布。
 - Overnight 继承 Autopilot 的自主循环，但必须沿用自身 `RUN-*` 和 `overnight_budget`，不得创建嵌套运行或重置预算。
-- GitHub Actions 成功前不把本线程标记为最终完成。
+- GitHub Actions 成功后才将本线程归档为完成；主提交对应 CI 已通过。
