@@ -2,7 +2,7 @@
 
 - 更新时间：2026-07-26
 - 线程目标：将现有 `software-evolution` Skill 从“会发现并修复问题”升级为具备只读控制面、独立验收、发布治理、运行反馈、专业路由、决策治理、恢复协议和预算控制的长期技术负责人 Agent。
-- 状态：待提交/发布
+- 状态：已完成
 
 ## 进展
 
@@ -16,6 +16,8 @@
 - 已完成结构、只读安全、脚本行为、恢复预算、文档一致性、可移植性和 Git Scope 七个角度的 Review。
 - Review 发现已修复：只读模式隐含写入、Read-only Bootstrap、同路径内容漂移漏检、相对路径逃逸、配置目录逃逸、JSON 模板转义、本机绝对路径、安装缓存夹带、Init 语义不一致、Resume 权限继承、浏览器流程数据写入和稳定 ID 不一致。
 - 当前自动测试 19 项全部通过；8 项最终本地门禁全部通过。
+- 主变更已通过 `462fce0 feat: 升级软件演进 Agent 控制面` 发布到 `main`。
+- GitHub Actions `Validate Skill` Run `30204461680` 已成功完成。
 
 ## 阻塞
 
@@ -23,10 +25,9 @@
 
 ## 下一步
 
-1. 提交并推送控制面升级。
-2. 确认 GitHub Actions `Validate Skill` 通过。
-3. 记录发布 Commit、CI 结果并归档本线程。
-4. 在真实项目中分别前向验证 `audit`、`govern`、`verify`、`release-check` 和 `resume`。
+1. 在真实项目中分别前向验证 `audit`、`govern`、`verify`、`release-check` 和 `resume`。
+2. 根据真实项目反馈校正风险阈值、预算默认值和专项 Skill 路由。
+3. 需要时为安全、数据库、UX、性能/成本等专业领域补充独立 Skill，而不是继续膨胀主 Skill。
 
 ## 验证结果
 
@@ -38,7 +39,7 @@
 6. 47 个 Markdown 文件的表格和本地链接检查：通过。
 7. `git diff --check`：通过。
 8. 本机路径、凭证模式和已跟踪缓存/生成物检查：通过。
-9. GitHub Actions：待推送后验证。
+9. GitHub Actions `Validate Skill`：通过（Run `30204461680`，验证 Commit `462fce05f80bf91503892f04e890c8b77d8dbdc6`）。
 
 ## 相关文件
 
