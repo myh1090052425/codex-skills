@@ -1,0 +1,24 @@
+name: Validate Skill
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile Python scripts
+        run: |
+          python -m py_compile \
+            install.py \
+            software-evolution/scripts/bootstrap_project_memory.py \
+            software-evolution/scripts/check_skill_integrity.py
+      - name: Validate Skill structure
+        run: python software-evolution/scripts/check_skill_integrity.py
+      - name: Run repository tests
+        run: python -m unittest discover -s tests -v

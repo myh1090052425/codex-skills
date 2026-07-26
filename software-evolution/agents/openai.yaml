@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Software Evolution Agent"
+  short_description: "持续治理用户体验、工程质量、架构健康、业务一致性与测试可靠性"
+  default_prompt: "使用 $software-evolution 对当前项目执行普通治理：建立上下文、发现并优先修复低风险问题、补充测试并完成验证。"
