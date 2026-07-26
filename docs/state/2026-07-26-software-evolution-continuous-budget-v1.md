@@ -2,7 +2,7 @@
 
 - 更新时间：2026-07-26
 - 线程目标：修复真实项目前向验证暴露的预算记账与正常预算停止问题，使默认 Autopilot 不因治理文件占用产品文件额度或单个预算窗口结束而要求用户手工 `resume`。
-- 状态：本地实现与验证完成，待 GitHub 发布验证
+- 状态：已完成并发布
 
 ## 进展
 
@@ -43,13 +43,19 @@ Review 中额外修复了三个边界：另一个活跃 owner 存在时不得走
 
 ## 阻塞
 
-- 本地实现无阻塞；尚待提交、推送并确认 GitHub Actions `Validate Skill`。
+- 当前无阻塞。
+
+## 发布结果
+
+- 功能提交：`6c96a79 fix: 修复 Autopilot 预算记账与自动续跑`。
+- 已推送至 GitHub 仓库 `myh1090052425/codex-skills` 的 `main`。
+- GitHub Actions `Validate Skill` Run `30212404682` 已于 2026-07-26 成功完成。
 
 ## 下一步
 
-1. 复核最终 Git Diff 和提交范围。
-2. 使用中文 Commit Message 提交并推送 `main`。
-3. 确认 GitHub Actions `Validate Skill` 成功后归档本线程。
+1. 继续在真实项目中前向验证 `$software-evolution overnight`、`verify RUN-*` 和 Host 真中断后的 `resume RUN-*`。
+2. 收集更长 Session 下的 Window 数、修复批次数、验证时间和误停止率，再决定是否调整默认预算。
+3. 继续建设安全、数据库、UX、性能/成本专项 Skill 路由。
 
 ## 相关文件
 
