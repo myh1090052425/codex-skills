@@ -11,6 +11,7 @@ import sys
 
 
 SKILL_NAME = "software-evolution"
+COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.py[cod]", ".DS_Store", ".pytest_cache")
 
 
 def default_target() -> Path:
@@ -92,7 +93,7 @@ def main() -> int:
 
     target.parent.mkdir(parents=True, exist_ok=True)
     if args.copy:
-        shutil.copytree(source, target)
+        shutil.copytree(source, target, ignore=COPY_IGNORE)
     else:
         target.symlink_to(source, target_is_directory=True)
 

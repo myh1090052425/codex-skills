@@ -1,5 +1,7 @@
 # Code Quality and Reliability Governance
 
+Apply the selected mode contract first. In a read-only mode, use this guidance only to inspect, prove, and report; do not execute the repair, convergence, or check-creation steps.
+
 Prefer correctness, clarity, controlled side effects, and operability over stylistic uniformity.
 
 ## Frontend

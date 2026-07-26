@@ -1,7 +1,7 @@
 # Capability Map — {{PROJECT_NAME}}
 
-> Last updated: {{DATE}}  
-> Repository: `{{REPOSITORY_PATH}}`  
+> Last updated: {{DATE}}
+> Repository: `{{REPOSITORY_REFERENCE}}`
 > Record business effects, not one row per method. Search this map before adding a new capability.
 
 ## Capability taxonomy and aliases
@@ -12,9 +12,9 @@
 
 ## Canonical capabilities
 
-| Capability ID | Business capability | Actor intent/outcome | Aggregate/data owner | Canonical implementation | Entry points/callers | Inputs/outputs | Invariants/authorization | Side effects/events | Classification | Reusable? | Evidence/last verified |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| CAP-TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | uncertain | unknown | unknown |
+| Capability ID | Business capability | Actor intent/outcome | Aggregate/data owner | Canonical implementation | Entry points/callers | Inputs/outputs | Invariants/authorization | State transition | Side effects/events | Consistency/deployment constraints | Classification | Reusable? | Evidence/last verified |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| CAP-TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | uncertain | unknown | unknown |
 
 Classification values:
 
@@ -28,7 +28,7 @@ Classification values:
 
 | Candidate ID | Suspected shared business effect | Implementations compared | Similarities | Material differences | Current classification | Risk of drift | Proposed decision | Evidence gap/debt ID |
 |---|---|---|---|---|---|---|---|---|
-| DUP-TBD | TBD | TBD | TBD | TBD | uncertain | TBD | TBD | TBD |
+| FIND-TBD | TBD | TBD | TBD | TBD | uncertain | TBD | TBD | TBD |
 
 ## Rule ownership map
 
@@ -38,6 +38,6 @@ Classification values:
 
 ## New capability decisions
 
-| Date | Requested capability | Search terms and existing candidates | Decision: reuse/extend/adapter/new | Reason | Verification | Related IDs |
-|---|---|---|---|---|---|---|
-| TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| Date | Requested capability | Search terms and existing candidates | Decision: reuse/extend/adapter/new | Canonical owner/boundary | Reason | Verification | Related FIND/DEBT/DEC/BATCH IDs |
+|---|---|---|---|---|---|---|---|
+| TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |

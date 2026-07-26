@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "project": "{{PROJECT_NAME}}",
+  "repository": "{{REPOSITORY_REFERENCE}}",
+  "updated_at": "{{DATE}}",
+  "source_revision": {
+    "branch": "unknown",
+    "head": "unknown"
+  },
+  "quality_gates": [],
+  "critical_flows": [],
+  "sli_slo": [],
+  "known_failures": [],
+  "observability_gaps": [],
+  "notes": [
+    "Populate only from measured or authoritative evidence; do not store secrets or personal data."
+  ]
+}

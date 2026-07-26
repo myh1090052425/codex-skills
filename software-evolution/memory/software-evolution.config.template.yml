@@ -1,0 +1,46 @@
+# AI Software Evolution Agent project control plane.
+# This restricted YAML file supports mappings and scalar values only.
+version: 1
+memory_dir: docs/software-evolution
+
+autonomy:
+  max_risk: R2
+  allow_product_writes: true
+
+budget:
+  max_scope_items: 60
+  max_findings: 12
+  max_repair_batches: 2
+  max_files_changed: 12
+  reserve_verification_minutes: 15
+
+deep_budget:
+  max_scope_items: 200
+  max_findings: 40
+  max_repair_batches: 3
+  max_files_changed: 24
+  reserve_verification_minutes: 30
+
+readonly:
+  allow_record_persistence: true
+
+release:
+  require_required_checks: true
+  require_rollback_plan: true
+  require_mixed_version_check: true
+
+observe:
+  production_read_only: true
+  default_window_minutes: 30
+
+specialist_routing:
+  security: auto
+  supply_chain: auto
+  data: auto
+  performance_cost: auto
+  ux: auto
+  database: auto
+  ci_cd: auto
+
+fitness:
+  enforce_registered_checks: true

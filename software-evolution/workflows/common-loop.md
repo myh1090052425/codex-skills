@@ -1,107 +1,131 @@
 # Common Governance Loop
 
-Use this loop for every mode. Keep each batch independently reviewable and verifiable.
+Use this loop for every mode. Resolve the write contract before any command that could alter source, configuration, data, external systems, or durable reports.
 
-## 1. Orient and protect the workspace
+## Shared evidence phases
 
-- Locate the repository root and read applicable `AGENTS.md`, contribution guides, architecture docs, runbooks, test docs, and existing software-evolution memory.
-- Inspect `git status`, current branch, recent commits, and relevant diffs when Git exists.
-- Identify user-owned uncommitted changes. Do not overwrite, revert, format, or stage unrelated files.
-- Identify production resources, external services, secrets, generated files, migration directories, and other protected boundaries.
-- Record assumptions. Convert important unknowns into explicit discovery tasks.
+### 1. Orient and protect
 
-## 2. Build the working system model
+- Locate the repository root and read applicable `AGENTS.md`, contribution guides, architecture docs, runbooks, test docs, project configuration, and software-evolution memory.
+- Inspect Git branch, HEAD, status, relevant base/diff, and recent commits when Git exists.
+- Identify user-owned changes, generated areas, migrations, secrets, production resources, shared environments, and protected boundaries.
+- Validate `.software-evolution.yml` when present. Use conservative defaults when absent and state them.
+- Record assumptions and turn material unknowns into discovery tasks.
+
+### 2. Build the working system model
 
 Capture only facts needed for the current scope:
 
-- Business goal, primary actors, and critical user journeys.
-- Runtime entry points, modules, packages, services, jobs, and deployment units.
-- Domain aggregates, state machines, core rules, and data stores.
-- External contracts, queues/events, caches, feature flags, permissions, and scheduled work.
-- Test layers and exact local verification commands.
+- Business goal, actors, critical journeys, expected outcomes, and authoritative rule sources.
+- Runtime units, modules, services, jobs, deployment units, and dependency direction.
+- Domain aggregates, state machines, data ownership, consistency model, and permission boundaries.
+- External contracts, queues/events, caches, feature flags, scheduled work, and failure behavior.
+- Test layers, architecture fitness functions, release path, telemetry, and exact safe verification commands.
 
-Use `architecture-memory.md` as a starting hypothesis, not unquestioned truth. Correct stale entries when source or runtime evidence disagrees.
+Treat engineering memory and health baselines as hypotheses. Correct stale entries when source, tests, runtime, or authoritative documentation disagree.
 
-## 3. Establish the inspection scope
+### 3. Declare scope and budget
 
-Prefer, in order:
+Prefer user scope, then current changes, critical journeys, ready debt, and evidence-backed hotspots. Declare:
 
-1. User-specified files, flows, debt IDs, or failures.
-2. Uncommitted and recently committed changes.
-3. Critical business journeys and high-change modules.
-4. High-priority ready items in `technical-debt.md`.
-5. Risk hotspots revealed by failures, complexity, coupling, or missing coverage.
+- Included files/modules/flows/contracts and explicit exclusions.
+- Target identity: working tree, branch/base, commit, PR, release, service, or time window.
+- Maximum scope items, findings to validate, repair batches, changed files, and verification reserve.
+- Specialist routes and environments that are unavailable or unsafe.
 
-Do not claim repository-wide coverage unless the worklist actually covered the repository-wide surfaces defined in deep mode.
+Do not claim repository-wide, production-wide, or release-wide coverage beyond the declared worklist.
 
-## 4. Discover and prove findings
+### 4. Inspect and prove
 
-Use multiple evidence channels when available:
+Use independent evidence channels when available:
 
-- Static source and call-chain tracing.
-- Tests, fixtures, contracts, schemas, and migrations.
-- Runtime logs, API behavior, browser behavior, screenshots, and network traces.
-- Git history and design decisions when they explain intentional structure.
-- Data/query plans or metrics for performance claims.
+- Source and call-chain tracing.
+- Tests, schemas, migrations, fixtures, and API/event contracts.
+- Browser/API/job behavior and screenshots/traces.
+- Logs, metrics, traces, alerts, incidents, query plans, and deployment evidence.
+- Git history and decision records when they explain intent.
 
-Separate:
+Classify evidence:
 
-- `confirmed`: reproducible or directly proven.
-- `probable`: strong evidence with one material gap.
-- `candidate`: useful lead that is not ready to repair.
+- `confirmed`: directly reproduced or proven.
+- `probable`: strong evidence with one material gap and an explicit validation path.
+- `candidate`: useful lead, not ready for repair or release blocking unless risk demands caution.
 
-Only `confirmed` findings and bounded `probable` findings with a safe validation plan may enter autonomous repair.
+### 5. Prioritize
 
-## 5. Prioritize
+Order by user/data/security/availability harm, business correctness, reliability, architecture multiplication, UX impact, and then maintainability/cost. Break ties with confidence, blast radius, recurrence, reversibility, and verification quality.
 
-Use this ordering:
+### 6. Decide the route
 
-1. User/data loss, security boundary break, severe outage, or blocked critical journey.
-2. Incorrect business behavior or inconsistent core rules.
-3. Reliability, concurrency, transaction, resource, timeout, retry, and observability failures.
-4. Architecture boundary decay or duplicate business capability likely to multiply.
-5. UX friction with measurable task impact.
-6. Maintainability and performance debt with clear recurrence or cost.
-7. Cosmetic or preference-only cleanup.
+For each material item, choose one route:
 
-Break ties with evidence confidence, blast radius, recurrence, repair reversibility, and verification quality. Do not prioritize by how easy a finding is to describe.
+- Report as evidence-backed finding.
+- Create a decision record because authority is missing.
+- Route to a specialist workflow.
+- Add/advance technical debt.
+- Enter a writable repair batch.
+- Block release or continuation pending evidence/approval.
+- Accept intentionally with reason and review trigger.
 
-## 6. Form a coherent batch
+## Read-only exit
 
-- Group changes by one root cause or one contract boundary.
-- Define expected behavior, files likely to change, callers affected, tests to add, validation commands, and rollback method.
-- Keep unrelated findings in `technical-debt.md` rather than mixing them into the patch.
-- Establish a baseline before editing when feasible.
+Applies to `audit`, `verify`, `release-check`, `observe`, and any `resume` that cannot prove its inherited write contract.
 
-## 7. Repair and validate incrementally
+1. Do not edit product code, tests, project configuration, memory, data, Git state, external systems, or production state.
+2. Run only commands known to be observational or isolated. Do not run tests/scripts that may mutate shared data or tracked source without a safe sandbox.
+3. Produce the mode-specific report/verdict in the response.
+4. Persist only when the user explicitly requests it or passes `--record`; then write only the designated report/decision file after re-reading its destination.
+5. If a safe fix is obvious, identify the exact `repair` target and verification plan. Do not perform it in the read-only mode.
 
-For each batch:
+## Writable exit
 
-1. Add or identify a failing regression check when practical.
+Applies to `govern`, `repair`, budgeted repair waves in `deep`, and a safely resumed writable batch.
+
+### 7. Form one coherent batch
+
+- Group work by one root cause, capability, or contract boundary.
+- Define expected behavior, files/callers, tests, compatibility, rollback, stop condition, and budget consumption.
+- Create `DEC-*` first when business authority is unresolved.
+- Establish or refresh a `BATCH-*` checkpoint before significant edits.
+
+### 8. Establish a baseline
+
+Reproduce the issue or capture characterization evidence when feasible. Run directly relevant existing checks and distinguish pre-existing failures from new work.
+
+### 9. Repair incrementally
+
+1. Add or identify a regression check.
 2. Apply the minimum root-cause fix.
-3. Run the narrow test immediately.
-4. Inspect the diff for accidental churn.
-5. Run the risk-appropriate broader validation.
-6. Exercise the user/API flow when behavior is externally visible.
-7. Re-scan affected callers and capability-map entries.
+3. Run the narrow check immediately.
+4. Inspect the diff for accidental churn and budget overflow.
+5. Run risk-required broader checks.
+6. Exercise the user/API/job flow when externally visible.
+7. Re-scan callers, rules, capability ownership, boundaries, and fitness functions.
 
-If the same hypothesis fails three times, stop that path and re-evaluate the model before another edit.
+Stop the same failed hypothesis after three attempts. Do not start another repair batch when doing so would violate file/batch limits or consume the reserved verification budget.
 
-## 8. Persist evidence and continuation state
+### 10. Verify and independently challenge
 
-- Mark fixed debt items as `verified` only after their verification evidence exists.
-- Add unresolved but proven work to `technical-debt.md` with a concrete next step.
-- Update capability and architecture memory only with facts supported by code, tests, runtime evidence, or authoritative docs.
-- Record the next safe action so another invocation can resume without rediscovery.
+- Check positive, negative, boundary, retry/idempotency, permission, and compatibility behavior as applicable.
+- Inspect final diff/status and unrelated changes.
+- Challenge whether tests merely encode the implementation rather than the authoritative outcome.
+- For R2/R3 work, verify rollback and transitional behavior.
 
-## 9. End-of-batch quality gate
+### 11. Remember and checkpoint
 
-Before ending, require all applicable answers to be explicit:
+- Update debt status only with evidence.
+- Update capability/architecture memory when ownership, contracts, rules, or runtime facts changed.
+- Update health baseline only from measured evidence.
+- Persist the exact verification status, remaining work, Git identity, and next safe action in the batch checkpoint.
 
-- What changed for users or operators?
-- Which business capability and invariant were affected?
-- Which callers, contracts, data, and modules were inspected?
-- What tests would have caught the original problem?
-- Which checks passed, failed, were blocked, or were not run?
-- Did the change add a duplicate capability, boundary leak, temporary branch, or new debt?
-- Is rollback straightforward?
+## Stop conditions
+
+Stop safely when:
+
+- No actionable finding remains in scope.
+- Required evidence, environment, authority, or approval is unavailable.
+- A protected or irreversible boundary is next.
+- Drift invalidates the current checkpoint.
+- The budget cannot support another complete edit-test-rescan cycle.
+
+Never convert an incomplete batch into a completion claim. Preserve a resumable checkpoint or a read-only finding instead.

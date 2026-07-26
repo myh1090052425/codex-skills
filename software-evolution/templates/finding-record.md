@@ -4,7 +4,7 @@
 - Confidence: `high|medium|low`
 - Status: `confirmed|probable|candidate|repaired|verified|blocked`
 - Governance pillar: `UX/business|engineering/reliability|architecture/evolution`
-- Affected capability/debt IDs: `TBD`
+- Affected capability/debt/decision/batch IDs: `TBD`
 
 ## Location and call chain
 

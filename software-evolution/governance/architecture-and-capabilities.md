@@ -1,98 +1,88 @@
 # Architecture and Capability Governance
 
-Protect boundaries and converge business effects without creating abstraction for its own sake.
+Apply the selected mode contract first. In a read-only mode, use this guidance only to inspect, prove, and report; do not execute the repair, convergence, or check-creation steps.
 
-## Architecture health checks
+Protect business ownership, data ownership, dependency direction, and the system's ability to change safely. Do not equate architecture with folder aesthetics.
 
-Inspect:
+## Boundary review
 
-- Module and deployment boundaries.
-- Responsibility and change ownership.
-- Dependency direction and forbidden inward/outward references.
-- Cycles, shared mutable state, and hidden runtime coupling.
-- Domain aggregates, invariants, transactions, and data ownership.
-- Public/internal contracts and adapter boundaries.
-- High fan-in/out modules and change hotspots.
-- Abstractions whose names and APIs express domain intent.
-- Pass-through layers, wrapper chains, “common” dumping grounds, and speculative frameworks.
+For each affected module/runtime unit, identify:
 
-A boundary issue is material when it causes rule duplication, unsafe change propagation, inconsistent transactions, testing difficulty, release coupling, or unclear ownership.
+- Owned business decisions and data.
+- Public capabilities/contracts and allowed callers.
+- Inbound/outbound dependencies and deployment boundaries.
+- Transaction/consistency/permission boundaries.
+- Failure isolation, operational ownership, and change cadence.
 
-## Define a business capability signature
+Flag cycles, cross-boundary writes, shared mutable state, leaked internal models, high fan-in/out, pass-through layers, and dependency direction that bypasses the owner. Prove material claims with import/dependency graphs, call paths, schemas, runtime units, or change history.
 
-Represent each capability with:
+## Capability identity
+
+Model a business capability as:
 
 ```text
-Capability = actor intent
-           + business outcome/state effect
-           + primary aggregate/data ownership
-           + inputs and outputs
-           + invariants and authorization
-           + side effects/events
-           + entry points and callers
+actor intent
++ business outcome/state effect
++ aggregate/data owner
++ inputs/outputs
++ invariants and authorization
++ state transition
++ side effects/events
++ entry points/callers
++ consistency/deployment constraints
 ```
 
-Names and code similarity are supporting signals, not the definition.
+Textual similarity is only a search clue. Different code can implement the same capability; similar code can serve different capabilities.
 
-## Discover duplicate capabilities
+## Semantic duplicate detection
 
-1. Inventory candidates from:
-   - Routes/endpoints, UI actions, commands, jobs, consumers, service methods, domain methods, and repository operations.
-   - Domain verbs and synonyms such as update/modify/change/adjust.
-   - Shared aggregates, tables, events, status transitions, validators, permissions, and result DTOs.
-2. Normalize each candidate into a capability signature.
-3. Cluster candidates by the same business outcome or state effect.
-4. Trace callers and side effects to determine whether they are:
-   - `canonical`: owns the invariant and business effect.
-   - `adapter`: translates protocol/context into the canonical capability.
-   - `specialization`: intentionally adds narrower rules while reusing the base invariant.
-   - `duplicate`: independently owns substantially the same effect and rules.
-   - `uncertain`: evidence or business authority is insufficient.
-5. Record evidence and classification in `capability-map.md`.
+1. Build aliases from domain terms, UI labels, routes, commands, events, tables, DTO fields, permissions, and support language.
+2. Search entry points and follow each candidate to its final data/state/event effect.
+3. Normalize inputs/outputs and compare boundary conditions, authorization, idempotency, validation, transaction, and failure behavior.
+4. Compare callers and why each implementation exists, including history and deployment/data ownership.
+5. Classify:
+   - `canonical`: authoritative owner.
+   - `adapter`: protocol/UI/job/event translation into the canonical owner.
+   - `specialization`: explicit additional constraint with a shared invariant core.
+   - `duplicate`: independently owns the same effect and rules.
+   - `uncertain`: authority/evidence gap.
+6. Link accidental duplicates to one finding/debt/decision rather than creating isolated cleanup tasks.
 
-## Decide whether to converge
+## False-positive guardrails
 
-Converge when:
+Do not converge merely because implementations share CRUD shape, validation syntax, field names, or a table. Keep separation when data/deployment ownership, consistency, authorization, lifecycle, regulatory context, version compatibility, or operational failure isolation materially differs.
 
-- The business outcome and invariant are the same.
-- Independent implementations can drift or already conflict.
-- One implementation can own the transaction/data effect.
-- Callers can migrate without an unsafe contract break.
+Do not abstract when:
 
-Do not converge when:
-
-- Similar verbs operate on different aggregates or lifecycle stages.
-- Protocol, latency, consistency, tenancy, or permission boundaries legitimately differ.
-- A shared abstraction would expose a union of unrelated options or require caller-specific branching.
-- The duplication is cheaper and safer than the coupling it would introduce.
+- No stable semantic owner exists.
+- The common interface would expose unrelated options or flags.
+- Callers require divergent transaction/authorization behavior.
+- The coupling cost exceeds the drift risk.
 
 ## Convergence pattern
 
-Prefer:
+1. Select a domain-named canonical owner.
+2. Put invariants and state transitions there.
+3. Keep thin boundary adapters.
+4. Characterize all variants and migrate callers incrementally.
+5. Support mixed versions when deployment requires it.
+6. Remove duplicate paths only after usage, side effects, and rollback are verified.
+7. Update capability map, architecture memory, decisions, and fitness functions.
 
-1. Select or create one domain-named canonical capability.
-2. Move invariants and state transitions into that owner.
-3. Keep thin adapters at UI/API/job/event boundaries.
-4. Migrate callers incrementally with characterization tests.
-5. Remove duplicate behavior only after all callers and side effects are verified.
-6. Update the capability map and architecture memory.
-
-Avoid:
-
-- Wrapper around wrapper.
-- Manager/facade/service pass-through chains.
-- Generic utility APIs with flags for unrelated business variants.
-- Shared DTOs that leak one module's model into all others.
-- Centralization that violates data or deployment ownership.
+Avoid wrapper-around-wrapper, manager/facade/service pass-through chains, generic utilities with behavior flags, universal DTOs, and centralization that violates data/deployment ownership.
 
 ## New capability gate
 
-Before implementing a new capability, require documented answers:
+Before introducing a service, endpoint, component, DTO, validator, permission rule, query, event, or utility, record:
 
-- Which capability-map terms and synonyms were searched?
-- Which existing implementations were compared?
-- Why reuse, extension, adapter, or a new canonical capability is correct?
-- What invariant owner and data boundary will own the effect?
-- How will the capability be tested and recorded?
+- Search terms/aliases and existing candidates.
+- Semantic comparison and classification.
+- Reuse/extend/adapter/new decision and owner.
+- Invariant/data/permission boundary.
+- Tests, compatibility, telemetry, and capability-map update.
 
-If these answers are missing, do not add the new implementation yet.
+If authority is uncertain, create `DEC-*`; do not silently add a parallel implementation.
+
+## Architecture fitness
+
+Register executable checks for critical boundaries using [architecture-fitness.md](architecture-fitness.md). A fitness failure is evidence to investigate, not automatic permission for a broad refactor.

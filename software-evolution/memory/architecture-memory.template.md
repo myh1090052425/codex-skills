@@ -1,7 +1,7 @@
 # Architecture Memory — {{PROJECT_NAME}}
 
-> Last updated: {{DATE}}  
-> Repository: `{{REPOSITORY_PATH}}`  
+> Last updated: {{DATE}}
+> Repository: `{{REPOSITORY_REFERENCE}}`
 > Evidence status: use `verified`, `inferred`, or `unknown` on material entries.
 
 ## 1. Product and business context
@@ -60,7 +60,7 @@
 
 | Decision ID | Date | Decision | Reason/context | Alternatives rejected | Consequences | Evidence |
 |---|---|---|---|---|---|---|
-| ADR-TBD | TBD | TBD | TBD | TBD | TBD | unknown |
+| DEC-TBD | TBD | TBD | TBD | TBD | TBD | unknown |
 
 ## 10. Constraints and prohibited patterns
 
@@ -84,3 +84,27 @@
 | Unknown | Why it matters | How to resolve | Status |
 |---|---|---|---|
 | TBD | TBD | TBD | open |
+
+## 13. Release, migration, and rollback model
+
+| Deployment unit/change type | Ordering and mixed-version contract | Migration/flag strategy | Rollback or roll-forward | Last evidence |
+|---|---|---|---|---|
+| TBD | TBD | TBD | TBD | unknown |
+
+## 14. Observability and SLI/SLO map
+
+| Critical outcome/service | SLI/SLO or threshold | Logs/metrics/traces/alerts | Known blind spot | Last observed/evidence |
+|---|---|---|---|---|
+| TBD | TBD | TBD | TBD | unknown |
+
+## 15. Architecture fitness functions
+
+| Fitness ID | Protected invariant | Command/query/procedure | Gate level | Expected result | Last result/evidence | Exception/expiry |
+|---|---|---|---|---|---|---|
+| FIT-TBD | TBD | TBD | advisory/governance/merge/release | TBD | not run | TBD |
+
+## 16. Active decisions and resumable batches
+
+| ID | Type | Scope | Status | Authority/last passed gate | Next action |
+|---|---|---|---|---|---|
+| DEC-TBD/BATCH-TBD | decision/batch | TBD | TBD | TBD | TBD |

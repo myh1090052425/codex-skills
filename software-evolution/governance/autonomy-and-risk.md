@@ -1,66 +1,61 @@
 # Autonomy and Risk Policy
 
-Use autonomy to complete safe work, not to bypass uncertainty or protected boundaries.
+Autonomy completes safe work; it does not create missing authority. Both the selected mode and the risk class must permit an action.
 
 ## Risk classes
 
-| Class | Typical changes | Default action | Minimum verification |
+| Class | Typical scope | Default handling | Minimum evidence |
 |---|---|---|---|
-| R0 — observational | Read-only analysis, memory correction, test discovery | Execute | Source/runtime evidence |
-| R1 — low | Local bug fix, error message, missing state, isolated duplication, test addition, safe query/index suggestion without production mutation | Repair autonomously | Targeted regression test plus relevant static checks |
-| R2 — medium | Shared component/service refactor, transaction/retry change, performance optimization, internal contract consolidation | Plan, then repair autonomously only when impact and rollback are bounded | Targeted tests, affected integration/build checks, caller review |
-| R3 — high | Data model/migration, permission model, core domain semantics, public API, event schema, cross-service protocol | Write staged plan first; execute only reversible backward-compatible phases when explicitly in scope and fully testable | Contract/migration tests, integration/end-to-end checks, rollback evidence |
-| R4 — protected | Production mutation, destructive cleanup, credential/access change, irreversible data operation, force push/history rewrite | Require explicit user approval | User-approved operation-specific checks |
+| R0 — observational | Read-only analysis, discovery, report, memory proposal | Execute within mode | Source/runtime evidence and coverage limits |
+| R1 — low | Local bug, missing state/test, isolated duplication, deterministic error handling, bounded query improvement | Repair autonomously in writable mode | Regression test plus relevant static/module checks |
+| R2 — medium | Shared component/service refactor, internal contract consolidation, retry/transaction/concurrency/performance change | Plan and repair only when impact, rollback, callers, and budget are bounded | Targeted tests, affected integration/build/runtime checks, caller review |
+| R3 — high | Data model/migration, permission model, core semantics, public API/event schema, cross-service protocol | Decision/staged compatibility plan first; only reversible compatible phases when explicitly in scope | Old/transitional/final contract tests, migration/release/rollback evidence |
+| R4 — protected | Production mutation, deployment/rollback, destructive cleanup, credential/access change, irreversible data, force push/history rewrite | Explicit approval at action time | Operation-specific preconditions, rollback/stop plan, post-action evidence |
+
+## Mode gate
+
+- `audit`, `verify`, `release-check`, and `observe` remain read-only for every risk class.
+- `init` may create only missing control-plane files/directories.
+- `govern` and `repair` may execute R1 and bounded R2 work up to configured `autonomy.max_risk`.
+- `deep` may execute the same classes only inside declared repair-wave and file budgets.
+- R3 execution requires an explicit target/approved decision and a reversible compatible phase; planning alone does not authorize a write.
+- `resume` inherits the proven original gate. Unknown or drifted origin falls back to read-only.
 
 ## Autonomous repair requirements
 
-Repair without asking only when all are true:
+All must be true:
 
-- The problem is confirmed or strongly proven.
-- The expected behavior is unambiguous.
-- The affected scope and callers are known.
-- The change is reversible and preserves contracts.
-- Relevant tests can be added or run.
-- No production, credential, irreversible data, or user-owned change is at risk.
+- Problem is confirmed, or probable with a safe test that closes the remaining gap before material edits.
+- Expected outcome and business authority are unambiguous.
+- Affected callers, contracts, data, permissions, and release implications are known.
+- Change is reversible and preserves external compatibility or follows an approved staged transition.
+- Required tests/runtime checks are available and fit the remaining budget.
+- User-owned changes and protected boundaries are isolated.
+- No production/external mutation is implied.
+
+When one condition fails, produce a finding, decision record, specialist handoff, or blocked checkpoint rather than asking a broad question or proceeding speculatively.
 
 ## Refactoring requirements
 
-Refactor autonomously only when:
+Refactor autonomously only when semantics remain unchanged, behavior is characterized, rollback is straightforward, and the result reduces total concepts/rules/paths. A shared abstraction must have proven semantic consumers or restore an existing boundary.
 
-- Business semantics remain unchanged.
-- The target abstraction already has at least two proven semantic consumers, or the refactor restores an existing boundary.
-- Tests characterize the affected behavior.
-- The migration can be completed in one coherent batch or through compatible phases.
-- The result reduces total concepts, paths, or duplicated rules rather than moving complexity.
+Do not create `Manager`, `Facade`, `Wrapper`, `Common`, `Base`, or `Utils` layers merely to hide duplication. Prefer a domain-named canonical capability; retain deliberate duplication when coupling, ownership, deployment, or consistency costs are higher.
 
-Do not create `Manager`, `Facade`, `Wrapper`, `Common`, `Base`, or `Utils` layers merely to hide duplication. Prefer a domain-named canonical capability or keep deliberate duplication when coupling would cost more.
+## R3 plan contents
 
-## High-risk plan contents
+Record current/desired contracts, authority, consumers, compatibility window, migration/backfill, mixed-version behavior, permissions/privacy, deployment order, flags, telemetry thresholds, rollback/roll-forward, cleanup gate, and tests for old/transitional/final states.
 
-Before R3 work, record:
+## Always require explicit approval
 
-- Current and desired contracts.
-- Business owner or authoritative rule source.
-- Consumers and compatibility window.
-- Data migration/backfill and rollback.
-- Permission and privacy impact.
-- Deployment ordering and feature flags.
-- Observability and success/failure thresholds.
-- Tests for old, transitional, and final states.
+Before:
 
-## Always pause for approval
+- Deleting/rewriting user or shared data.
+- Running shared/production migrations, backfills, reconciliation writes, deploys, or rollbacks.
+- Expanding privileges, changing authentication/authorization, handling credentials, or changing sensitive-data policy.
+- Publishing externally, force-pushing, rebasing shared history, deleting remote resources, or mutating external issue/PR state unless specifically requested.
+- Changing feature flags, alerts, dashboards, production config, sampling, or safety controls.
+- Disabling tests, audit logging, security controls, or safeguards to obtain a green result.
 
-Pause before:
+## Existing changes and repeated failure
 
-- Deleting or rewriting user data.
-- Running migrations against shared/production environments.
-- Expanding privileges, changing authentication policy, or handling credentials.
-- Publishing, deploying, force-pushing, rebasing shared history, or deleting remote resources.
-- Disabling tests, security controls, audit logging, or data safeguards to make validation pass.
-
-## Existing changes
-
-- Treat uncommitted files as potentially user-owned.
-- Edit them only when required for the target and preserve unrelated hunks.
-- Never use destructive reset/clean/checkout commands to simplify the workspace.
-- Do not commit unless the user or repository workflow requires it.
+Treat uncommitted files as potentially user-owned. Preserve unrelated hunks and never use destructive reset/clean/checkout operations. Stop the same repair hypothesis after three failed attempts; summarize evidence, question the model, and re-plan before another edit.

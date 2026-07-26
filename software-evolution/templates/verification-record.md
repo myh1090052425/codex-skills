@@ -1,7 +1,7 @@
 # Verification Record — {{CHANGE_OR_FINDING_ID}}
 
 - Date/environment: `TBD`
-- Scope: `TBD`
+- Scope and exact target identity: `TBD`
 - Risk class: `R0|R1|R2|R3|R4`
 - Baseline status: `TBD`
 

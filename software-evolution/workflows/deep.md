@@ -1,64 +1,47 @@
 # Deep Mode
 
-Perform staged repository-wide governance without turning the session into an unbounded rewrite.
+`WRITE POLICY: BUDGETED_WRITE`
 
-## Coverage contract
+Perform sliced repository-wide governance without turning one run into an unbounded rewrite.
 
-Define the repository-wide worklist before claiming deep coverage. Include applicable:
+## Budget contract
 
-- User-facing applications, routes, menus, critical journeys, accessibility and feedback states.
-- Public/internal APIs, background jobs, events, queues, schedulers, and external integrations.
-- Domain modules, shared libraries, data access, migrations, queries, caches, and configuration.
-- Test suites, CI/build tooling, deployment artifacts, observability, and failure handling.
-- Capability-map and business-rule consistency across modules.
+Before scanning, declare:
 
-Record excluded generated, vendored, fixture, archived, or inaccessible areas.
+- Scope worklist and exclusions.
+- Maximum scope items and validated findings.
+- Maximum repair waves and files changed.
+- Verification reserve that cannot be consumed by discovery or editing.
+- Areas explicitly deferred to a later batch.
 
-## Staged procedure
+Use `.software-evolution.yml` when valid. If absent, choose conservative explicit limits. Never claim repository-wide completion when only a slice was reviewed.
 
-### Stage 1: Baseline and architecture
+## Stages
 
-- Run init-mode discovery if memory is missing or stale.
-- Build the module/dependency map and identify cycles, boundary violations, high fan-in/out, shared mutable state, and change hotspots.
-- Identify critical capabilities and business invariants before inspecting implementation detail.
+### 1. Baseline and architecture
 
-### Stage 2: Experience and business flows
+Refresh missing/stale init evidence. Map runtime units, dependencies, cycles, fan-in/out, shared mutable state, hotspots, critical capabilities, invariants, fitness functions, release path, and observability.
 
-- Exercise representative critical flows when runnable.
-- Inspect navigation, findability, task length, forms, tables, dialogs, loading/empty/error/success/permission states, and business-flow continuity.
-- Trace observed issues into owning components, APIs, rules, and data effects.
+### 2. Experience and business flows
 
-### Stage 3: Engineering reliability
+Exercise representative critical flows when safely runnable. Inspect discoverability, task length, forms/tables/dialogs, accessibility, and loading/empty/error/success/permission/recovery states. Trace issues to owning code, rules, and data effects.
 
-- Inspect frontend, backend, database, async work, resource lifecycle, errors, timeouts, retries, idempotency, transactions, concurrency, caching, logging, and configuration.
-- Use tests, query plans, runtime evidence, or concrete call paths for material claims.
+### 3. Engineering reliability
 
-### Stage 4: Capability and rule convergence
+Inspect frontend, backend, database, async work, resources, exceptions, transactions, idempotency, concurrency, timeouts, retries, cache/message consistency, logging, configuration, dependencies, performance, and cost signals. Route specialist concerns.
 
-- Cluster implementations by business effect.
-- Detect duplicate capabilities, duplicate rules, conflicting state transitions, field semantics, enums, permissions, validators, and queries.
-- Distinguish legitimate adapters or specializations from semantic duplication.
+### 4. Capability and rule convergence
 
-### Stage 5: Prioritization and repair waves
+Cluster implementations by business effect. Detect duplicate capabilities and divergent state transitions, fields, enums, permissions, validators, and queries. Distinguish canonical owners, adapters, specializations, versions, and accidental duplication.
 
-- Create a ranked finding set and debt backlog.
-- Execute only small repair waves with complete verification.
-- Prefer enabling repairs first: missing characterization tests, observability, seams, or adapters that reduce the risk of later convergence.
-- Defer broad replacements, migrations, and contract breaks into staged plans.
+### 5. Prioritize and repair waves
 
-### Stage 6: Re-scan and report
+Create a ranked finding/debt set. Prefer enabling repairs such as characterization tests, telemetry, seams, and compatibility adapters. Execute only small waves whose full verification fits the remaining budget. Defer broad migrations and contract breaks into `DEC-*`/`DEBT-*` plans.
 
-- Re-run relevant inspections after each wave.
-- Update coverage, architecture memory, capability map, and debt statuses.
-- Report what was covered, fixed, deferred, blocked, and not inspected.
+### 6. Re-scan and checkpoint
 
-## Deep-mode stop rules
+After each wave, re-run affected inspections, update coverage and memory, and write a `BATCH-*` checkpoint using [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). Stop before the next wave if verification reserve, file limit, evidence, environment, authority, or safety is insufficient.
 
-Stop the current run rather than manufacturing repository-wide completion when:
+## Completion language
 
-- The worklist cannot be completed with trustworthy evidence.
-- Required services or test environments are unavailable.
-- A migration or business decision is needed.
-- Further work would combine unrelated changes into an unsafe patch.
-
-Persist a checkpoint and the next worklist slice for the next deep invocation.
+Report with [../templates/governance-report.md](../templates/governance-report.md). Say `slice complete`, not `repository clean`, unless every declared repository-wide surface was actually covered with trustworthy evidence. Persist the next worklist slice for `resume`.

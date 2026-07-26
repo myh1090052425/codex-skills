@@ -17,8 +17,14 @@ jobs:
           python -m py_compile \
             install.py \
             software-evolution/scripts/bootstrap_project_memory.py \
-            software-evolution/scripts/check_skill_integrity.py
-      - name: Validate Skill structure
+            software-evolution/scripts/check_skill_integrity.py \
+            software-evolution/scripts/validate_project_config.py \
+            software-evolution/scripts/check_checkpoint_drift.py
+      - name: Validate project config template
+        run: |
+          python software-evolution/scripts/validate_project_config.py \
+            --config software-evolution/memory/software-evolution.config.template.yml
+      - name: Validate Skill structure and contracts
         run: python software-evolution/scripts/check_skill_integrity.py
       - name: Run repository tests
         run: python -m unittest discover -s tests -v

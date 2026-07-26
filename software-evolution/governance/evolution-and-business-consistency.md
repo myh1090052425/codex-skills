@@ -1,83 +1,55 @@
 # Evolution and Business Consistency Governance
 
-Make every feature change pass a convergence gate so repeated AI-assisted development does not accumulate permanent patches.
+Apply the selected mode contract first. In a read-only mode, use this guidance only to inspect, prove, and report; do not execute the repair, convergence, or check-creation steps.
+
+Prevent each new requirement or AI-generated patch from becoming another permanent rule source, compatibility branch, or architecture exception.
 
 ## Post-change evolution gate
 
-After implementing any requirement, answer:
+After every writable batch, ask:
 
-1. What user journey and business capability changed?
-2. Which existing capability was reused or extended?
-3. Did the change introduce a parallel service, endpoint, component, DTO, validator, permission rule, query, or utility?
-4. Did responsibility move across a module or domain boundary?
-5. Did an `if/else`, feature flag, compatibility branch, fallback, or temporary adapter become permanent?
-6. Did the change create a new source of truth, state transition, field meaning, or data representation?
-7. Should an existing abstraction be simplified instead of adding another layer?
-8. Which tests prove old and new behavior together?
-9. Which memory and debt entries must change?
-
-Do not close the requirement until the answers are evidenced or explicitly recorded as debt.
-
-## Detect software rot
-
-Look for trends, not isolated aesthetics:
-
-- Multiple patches around the same invariant or state transition.
-- Increasing branch count in a central workflow.
-- Temporary feature flags or adapters without removal criteria.
-- Multiple modules writing the same aggregate or table.
-- Repeated domain translation at many callers.
-- Tests that mock the real rule owner differently in each module.
-- New code that bypasses an existing use case or canonical capability.
-- Shared layers that grow flags and caller-specific exceptions.
-- Documentation/memory that no longer matches runtime behavior.
-
-Prefer removing the underlying decision ambiguity, ownership gap, or missing seam over adding another patch.
+- Was an existing capability searched before a new implementation was added?
+- Did the change create a parallel service, endpoint, component, DTO, validator, permission rule, query, event, or utility?
+- Did responsibility or data ownership move across a boundary?
+- Did a temporary branch, fallback, adapter, migration path, or feature flag gain an owner and exit condition?
+- Did conditional complexity increase in a core flow?
+- Do tests and telemetry prove the intended outcome rather than the patch shape?
+- Does the release require mixed-version behavior or migration ordering?
+- Should an architecture fitness function prevent recurrence?
 
 ## Business consistency inventory
 
-Compare across modules:
+Compare repeated definitions of:
 
-- State machines and allowed transitions.
-- Enum/status definitions and display mappings.
-- Field names, units, nullability, defaults, and lifecycle meaning.
-- Validation thresholds, formulas, date/time boundaries, and rounding.
-- Authorization conditions, tenancy scope, ownership, and role semantics.
-- Core calculations, eligibility rules, pricing/risk/scoring logic, and error semantics.
-- Query filters that encode business inclusion/exclusion rules.
+- State transitions and terminal states.
+- Enums/status labels and field semantics.
+- Thresholds, calculations, eligibility, validation, and defaulting.
+- Authorization, tenant/data visibility, ownership, and approval.
+- Pricing, risk, limits, time/date, locale, retention, and reconciliation.
+- Success/failure semantics across UI, API, jobs, events, logs, and metrics.
+
+Search source, schemas, configs, migrations, tests, analytics queries, UI copy, and operational rules. A duplicated test constant can hide the same split as duplicated production code.
 
 ## Prove a rule split
 
-For each suspected inconsistency:
+1. Identify the same business question answered in multiple places.
+2. Extract each implementation's inputs, boundaries, state assumptions, output/effect, and authority.
+3. Find the source of truth: domain docs, approved decision, accepted tests, canonical service, schema constraint, product behavior, or owner.
+4. Trace callers, historical data, compatibility, and release implications.
+5. Classify as intentional context rule, versioned/deprecated rule, accidental divergence, or unknown authority.
 
-1. Identify the same business question being answered in multiple places.
-2. Extract each rule's inputs, thresholds, state assumptions, and outputs.
-3. Find the authoritative source: domain docs, accepted tests, canonical service, schema constraint, product behavior, or owner decision.
-4. Trace affected callers and historical data implications.
-5. Classify:
-   - Intentional context-specific rule.
-   - Versioned/deprecated rule.
-   - Accidental divergence.
-   - Unknown authority.
-
-Unify only accidental divergence with an authoritative target. Record unknown authority as blocked debt rather than choosing whichever implementation looks cleaner.
+Unify only accidental divergence with an authoritative target. Use `DEC-*` for unknown authority.
 
 ## Convergence strategy
 
-- Put the canonical invariant near its domain owner.
-- Expose one stable capability or policy interface.
-- Keep UI/API-specific formatting outside the rule.
-- Replace callers incrementally and preserve compatibility where required.
-- Add table-driven/contract tests covering thresholds, boundaries, state transitions, and permissions.
-- Remove obsolete branches after usage and tests prove migration completion.
-- Record the decision and historical reason in architecture memory.
+- Place the invariant near its domain/data owner.
+- Expose one stable capability/policy interface and keep boundary formatting outside it.
+- Characterize variants and replace callers incrementally.
+- Add table-driven/contract tests for thresholds, transitions, permissions, and mixed versions.
+- Observe runtime outcomes when the rule affects delayed/asynchronous behavior.
+- Remove obsolete branches only after usage, compatibility, and rollback gates pass.
+- Record the decision, historical reason, and fitness function when recurrence risk is material.
 
-## Patch budget
+## Temporary-change budget
 
-Treat a new compatibility branch as debt unless it has:
-
-- A documented reason.
-- An owner or removal trigger.
-- A measurable exit condition.
-- Test coverage for both paths.
-- A target date/version when meaningful.
+Treat a compatibility branch, flag, adapter, fallback, or duplicated write as debt unless it has a reason, owner/source, measurable exit condition, test/telemetry for both paths, and target date/version/trigger when meaningful. Count it in the current batch budget and checkpoint.

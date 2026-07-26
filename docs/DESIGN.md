@@ -1,118 +1,209 @@
 # 设计说明
 
-## Agent 定位
+## 1. 定位
 
-`software-evolution` 把 Codex 定位为项目的长期技术负责人，而不是一次性代码生成器或报告型扫描工具。
+`software-evolution` 是长期质量治理控制面，不是巨型检查清单。它负责建立系统认知、证明问题、控制修改、独立验收、管理发布和吸收运行反馈，让多轮 AI 开发不会持续积累平行能力、规则分裂和不可验证 Patch。
 
-核心闭环：
+## 2. 渐进披露结构
 
 ```text
-理解业务与系统
-→ 发现并证明问题
-→ 判断优先级和风险
-→ 制定最小修复方案
-→ 修改代码和补测试
-→ 自动验证
-→ 重新扫描影响范围
-→ 更新工程记忆和技术债
+SKILL.md                 # 触发、模式路由、不可违反规则
+workflows/               # 每种模式的执行协议
+governance/              # 专项规则与门禁
+templates/               # Finding/Decision/Batch/Report 等可复制产物
+memory/                  # 目标项目初始化模板
+scripts/                 # 低自由度、可测试的控制脚本
 ```
 
-每轮治理必须形成一个可以完整修改、验证和回滚的连贯批次，避免把无关问题混入同一次变更。
+`SKILL.md` 只承担导航和核心契约；详细规则按当前任务加载，避免每次把全部治理知识塞入上下文。
 
-## 三个核心治理方向
+## 3. 先分模式，再执行
 
-### 1. 用户体验与业务正确性
+最重要的设计是读写控制：
 
-运行条件允许时，优先通过真实浏览器或 API 流程判断：
+| 模式 | 控制策略 |
+|---|---|
+| `init` | 仅创建/更新治理控制面，不改产品文件 |
+| `audit` / `verify` / `release-check` / `observe` | 严格只读；`--record` 仅允许报告持久化 |
+| `govern` / `repair` | 小批次、受风险和预算约束的写入 |
+| `deep` | 分片、受预算约束的修复波次 |
+| `resume` | 继承可证明的原模式，否则降级只读 |
 
-- 功能入口是否可发现。
-- 页面和菜单是否符合用户任务。
-- 操作步骤是否重复或过长。
-- 表格、表单和弹窗是否清晰。
-- 加载、空状态、错误、成功和权限反馈是否完整。
-- 操作结果是否真正产生正确业务状态。
+显式只读模式优先于“发现问题就修”的一般自治原则。这解决了两个风险：审计者同时成为修复者导致确认偏差，以及用户只想了解问题却获得意外改动。
 
-UX 问题必须追踪到对应前端组件、API、业务规则和数据副作用。
+## 4. 双出口治理闭环
 
-### 2. 工程质量与系统可靠性
+共享证据阶段：
+
+```text
+Orient → Model → Scope → Inspect → Prove → Prioritize → Decide
+```
+
+只读出口：
+
+```text
+Report / Verdict / Decision / Specialist Handoff
+```
+
+可写出口：
+
+```text
+Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint
+```
+
+公共流程不再无条件包含 Repair。“不要只输出报告”仅适用于已选择可写模式且证据、风险、预算和验证均满足的情况。
+
+## 5. 三个核心治理方向
+
+### 5.1 用户体验与业务结果
+
+运行条件允许时优先通过浏览器、API 或 Job 实测：
+
+- 导航和入口是否可发现。
+- 操作路径、表单、表格、弹窗是否符合任务。
+- Loading、Empty、Error、Success、Permission、Retry、Recovery 是否完整。
+- UI 成功是否对应真实业务状态。
+- 权限提示是否有效且不泄露数据。
+
+发现必须追到拥有该行为的组件、API、领域规则、数据副作用和反馈链路。静态证据只能支撑静态结论。
+
+### 5.2 工程质量与可靠性
 
 沿完整调用链检查：
 
 ```text
-页面/API/任务入口
-→ Controller 或 Handler
-→ Service 或 Use Case
+UI/API/Job/Event
+→ Handler/Controller
+→ Use Case/Service
 → Domain Rule
-→ Repository 或外部服务
-→ 数据、事件和用户反馈
+→ Repository/External Effect
+→ Data/Event/User/Operator Feedback
 ```
 
-重点包括：
+重点包括职责、类型/状态、异常、事务、幂等、并发、超时、重试、缓存/消息一致性、SQL/锁、资源生命周期、配置和可观测性。
 
-- 组件职责、状态管理、请求和类型安全。
-- Controller、Service、Domain、Repository 分层。
-- 事务、幂等、并发、超时、重试和异常处理。
-- SQL、索引、N+1、大分页和数据一致性。
-- HTTP、数据库、文件、任务、监听器和缓存资源生命周期。
+### 5.3 架构健康与持续演进
 
-### 3. 架构健康与持续演进
+所有新增/修改通过演进门禁：
 
-所有需求完成后都必须通过演进门禁：
+- 业务能力是否已经存在。
+- 数据和规则的 Canonical Owner 是否明确。
+- 是否创建平行 Service/Endpoint/DTO/Validator/Permission/Query/Event。
+- 是否扩大条件分支和临时兼容路径。
+- Flag、Adapter、Dual Write 是否有退出条件。
+- 是否破坏依赖方向、部署边界或一致性模型。
+- 是否应增加 Architecture Fitness Function 防止复发。
 
-- 是否复用了已有业务能力。
-- 是否新增平行 Service、Endpoint、DTO、Validator、权限规则或查询。
-- 是否产生新的业务规则来源。
-- 是否扩大核心流程中的条件分支。
-- 临时适配层和 Feature Flag 是否具有退出条件。
-- 是否破坏模块边界、数据所有权或依赖方向。
+## 6. 语义级业务能力重复识别
 
-## 业务能力重复识别
-
-每个能力由以下签名描述：
+Capability Signature：
 
 ```text
-Capability =
-  actor intent
-  + business outcome/state effect
-  + aggregate/data ownership
-  + inputs/outputs
-  + invariants/authorization
-  + side effects/events
-  + entry points/callers
+actor intent
++ business outcome/state effect
++ aggregate/data owner
++ inputs/outputs
++ invariants/authorization
++ state transition
++ side effects/events
++ entry points/callers
++ consistency/deployment constraints
 ```
 
-发现候选后分类为：
+算法：
 
-- `canonical`：标准业务能力。
-- `adapter`：协议或入口适配。
-- `specialization`：有明确附加约束的特化能力。
-- `duplicate`：独立实现了相同业务结果和约束。
-- `uncertain`：证据或业务权威不足。
+1. 从领域术语、同义词、Route、UI Label、Command/Event、Table、Permission、DTO 字段构造搜索集合。
+2. 从每个入口追踪到最终状态、数据和事件效果。
+3. 归一化输入输出并比较边界值、权限、幂等、事务和失败行为。
+4. 比较调用方、历史原因、数据/部署所有权。
+5. 分类为 `canonical`、`adapter`、`specialization`、`duplicate`、`uncertain`。
+6. Accidental Duplicate 使用一个 Canonical Finding/Debt/Decision 聚合，避免碎片化修补。
 
-只有业务效果、规则和数据副作用实质相同才进行收敛。不同协议、部署、数据所有权或一致性要求形成的适配层不能被误判为重复能力。
+反误判规则：数据所有权、部署、授权、监管、一致性或失败隔离不同的实现可能是合理 Adapter/Boundary，不能为文本复用强行合并。
 
-## 自主修改风险模型
+## 7. 架构防腐机制
 
-| 等级 | 示例 | 默认处理 |
-|---|---|---|
-| R0 | 只读分析、记忆校正 | 直接执行 |
-| R1 | 局部 Bug、缺失测试、明确低风险修复 | 自动修复并验证 |
-| R2 | 共享模块和内部契约调整 | 先确认影响、测试和回滚边界 |
-| R3 | 数据模型、权限、核心业务模型、公共 API | 先制定分阶段兼容方案 |
-| R4 | 生产、不可逆数据、凭证、权限扩大、Git 历史重写 | 必须明确确认 |
+### Capability Reuse Gate
 
-## 验证门禁
+新增业务能力前必须完成语义搜索和所有权决策。
 
-每个修改批次要求：
+### Business Consistency Gate
 
-1. 建立修复前基线。
-2. 增加回归测试或特征测试。
-3. 执行最小根因修改。
-4. 运行直接相关测试。
-5. 运行模块测试、静态检查和构建。
-6. 按风险执行集成、数据库、API 或 UI 验证。
-7. 检查最终 Diff 和受影响调用方。
-8. 重新扫描重复能力、规则分裂和架构边界。
-9. 更新能力地图、架构记忆和技术债。
+持续对比状态机、Enum、字段含义、阈值、计算、资格、权限、时间/金额和成功失败语义；权威不明确则创建 `DEC-*`。
 
-同一修复假设连续失败三次后，Agent 必须停止该路径并重新归因，不能进行第四次盲目修改。
+### Architecture Fitness Functions
+
+将重要边界转成可重复命令或检查：依赖方向、Cycle、数据写入边界、API/Event Schema、迁移兼容、关键规则单一 Owner、测试/性能/观测门禁。每个 Fitness Function 有原因、Scope、期望、Gate、Owner 和 Exception Expiry。
+
+### Temporary Change Budget
+
+Feature Flag、Fallback、Adapter、兼容分支、Dual Write 必须记录原因、Owner、两条路径的测试/遥测、退出条件和 Target Version/Trigger。
+
+### Re-scan
+
+修复后重新检查调用方、能力地图、规则来源、边界和 Fitness Function，不能只看修改文件通过测试。
+
+## 8. 控制面文件
+
+目标项目中的：
+
+- `architecture-memory.md`：事实、边界、历史、Fitness、发布和观测模型。
+- `capability-map.md`：业务能力、别名、Owner、实现、调用方、规则和副作用。
+- `technical-debt.md`：可验证债务生命周期。
+- `health-baseline.json`：质量门禁、关键流程、SLI/SLO、已知失败和观测缺口。
+- `decisions/DEC-*.md`：权威和选项。
+- `batches/BATCH-*.md`：可恢复批次和 Git 漂移元数据。
+- `reports/`：Audit、Verification、Release、Observation 证据。
+
+稳定 ID 让 Finding、Decision、Repair、Verification、Release 和 Resume 共享一个长期上下文。
+
+## 9. 决策治理
+
+Agent 不能猜时不只说“需要确认”，而是生成最小决策包：问题、已知权威、缺口、受影响能力/数据/调用方、2–3 个选项、兼容性、推荐、不决策后果、批准点和最终生效范围。
+
+待决策期间可以继续只读证据和可逆准备，但不能实现依赖该语义的分支。
+
+## 10. 专业能力路由
+
+主 Skill 只负责识别、边界、优先级、集成和记忆；安全隐私、供应链、数据、性能成本、UX、数据库、CI/CD 交给可用专项 Skill 深入分析。路由继承父模式的读写权限，不能通过 Specialist 绕过只读或批准边界。
+
+## 11. 发布治理
+
+`release-check` 绑定 exact source/artifact identity，检查：
+
+- Required CI、测试、构建和 unresolved P0/P1。
+- API/Event/Schema/Client 兼容。
+- Expand/Migrate/Contract、Backfill、锁和恢复。
+- Old/New Mixed Version、Retry/Idempotency。
+- Feature Flag、Canary、Stop Condition、Rollback/Roll-forward。
+- 发布前、中、后的业务与技术 SLI。
+
+它只输出 `READY`、`CONDITIONAL`、`BLOCKED`、`UNKNOWN`，绝不把检查行为等同部署授权。
+
+## 12. 运行反馈闭环
+
+`observe` 将用户结果映射到 SLI/SLO、日志、指标、Trace、告警、队列/缓存/数据库和支持反馈，重点发现：静默失败、Durable Completion 前记录成功、Retry 重复计数、Trace 断裂、长周期盲区和 Alert 与用户影响脱节。
+
+Runtime Finding 必须记录环境、版本、窗口、过滤条件、样本/事件量、能力和替代解释。Correlation 不是 Root Cause。修复后定义观察窗口、目标、Guardrail 和 Rollback Threshold。
+
+## 13. 预算与恢复
+
+`.software-evolution.yml` 约束：范围项、Finding 数、修复批次、变更文件数和验证预留。验证预算先保留，发现和编辑不得消费完最后的验证能力。
+
+Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、预算、最后门禁、决定/批准和下一步。`resume` 分类：
+
+- `NO_DRIFT`
+- `SAFE_DRIFT`
+- `MATERIAL_DRIFT`
+- `CONFLICTING_DRIFT`
+- `UNKNOWN`
+
+只有 No Drift 和经确认的 Safe Drift 能直接继续。
+
+## 14. 自动修改安全与验收完整性
+
+写入必须同时满足 Mode、Risk、Authority、Budget、Verification 五个 Gate。R3 使用兼容性分阶段方案，R4 在操作点显式批准。
+
+`verify` 从 Artifact 和权威验收标准重新建模，不接受实现者的自证。失败时保持只读并输出 Repair Handoff。
+
+同一修复假设连续失败三次后停止；修改未达到风险所需测试、运行或观察证据时只能标记 `partial`、`failed` 或 `blocked`。

@@ -1,34 +1,34 @@
 # Repair Mode
 
-Repair validated findings or technical-debt items, add regression coverage, and prove the repaired behavior.
+`WRITE POLICY: BOUNDED_WRITE`
 
-## Target selection
+Repair a validated finding, decision-approved change, or ready technical-debt item and prove the repaired behavior.
 
-- If the user supplies a finding/debt ID or scope, use it.
-- Otherwise choose the highest-priority item in `technical-debt.md` whose status is `ready` and whose acceptance/verification criteria are concrete.
-- Do not repair a `candidate`, ambiguous business rule, or high-risk item without first closing its proof or decision gaps.
+## Target gate
+
+- Use the supplied `FIND-*`, `DEBT-*`, `DEC-*`, capability, file, flow, or failure target.
+- Without a target, choose the highest-priority `ready` debt item with concrete acceptance criteria.
+- Do not repair a candidate, ambiguous rule, unapproved protected change, or item whose proof has drifted.
 
 ## Procedure
 
-1. Re-read the target, related memory, repository instructions, current diff, and affected code.
-2. Reproduce the behavior or establish a failing/characterization test when feasible.
-3. Trace the complete relevant chain: entry point → orchestration → domain rule → persistence/external side effect → user/operator feedback.
-4. Define the invariant and expected behavior before editing.
-5. Classify risk and use a repair plan for medium/high-risk work.
-6. Apply the smallest root-cause fix. Preserve external contracts and data compatibility by default.
-7. Add tests at the lowest layer that proves the rule, plus integration/UI coverage when boundary behavior changed.
-8. Run targeted checks immediately, then broader checks required by the risk class.
-9. Validate the real user/API/job flow when runnable.
-10. Inspect the final diff and affected callers for regressions, duplicated rules, new adapters, dead code, or unhandled states.
-11. Mark the debt item `verified` only when evidence satisfies its verification criteria; otherwise mark `blocked` or `partial` with the exact gap.
-12. Update architecture memory and capability map if responsibility, boundaries, rules, or canonical implementations changed.
+1. Re-read the target, authority, related memory, config, repository rules, Git identity, current diff, and affected code.
+2. Reproduce the behavior or establish characterization evidence.
+3. Trace entry point → orchestration → domain rule → persistence/external effect → user/operator feedback.
+4. Define invariant, callers, contracts, risk, budget, rollback, and stop condition before editing.
+5. Create/refresh a `BATCH-*` checkpoint with [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). For R2/R3 planning, use [../templates/repair-plan.md](../templates/repair-plan.md); R3 requires an approved staged compatibility plan.
+6. Apply the smallest root-cause fix while preserving public/data compatibility by default.
+7. Add the lowest-layer regression test plus boundary/UI coverage where behavior crosses a boundary.
+8. Run targeted checks immediately, then risk-required integration/contract/migration/build/runtime checks and record them with [../templates/verification-record.md](../templates/verification-record.md).
+9. Inspect final diff and callers for regressions, duplicated rules, dead paths, missing telemetry, or new adapters.
+10. Mark the target `verified` only when acceptance evidence passes; otherwise mark `partial`, `failed`, or `blocked` with the exact gap.
+11. Update memory/capability/health/checkpoint records when ownership, rules, runtime facts, or next safe action changed.
 
-## High-risk phased repair
+## High-risk phases
 
-For data models, permissions, core domain models, external APIs, or cross-service protocols:
+For data models, permissions, core domain semantics, public APIs, events, or cross-service protocols:
 
-1. Write the current contract and compatibility constraints.
-2. Create a reversible phase plan with migration, rollback, telemetry, and acceptance checks.
-3. Prefer additive/backward-compatible changes, dual-read/write only when justified, feature flags, and explicit deprecation.
-4. Verify each phase independently.
-5. Stop before production mutation, irreversible migration, access expansion, or destructive cleanup unless the user explicitly approves it.
+1. Record current/desired contracts and consumers.
+2. Define additive transition, mixed-version behavior, migration/backfill, telemetry, rollback, and cleanup gate.
+3. Verify old, transitional, and final states independently.
+4. Stop before production mutation, destructive cleanup, privilege change, or irreversible migration unless explicitly approved.

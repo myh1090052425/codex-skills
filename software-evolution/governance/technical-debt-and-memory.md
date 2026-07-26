@@ -1,93 +1,85 @@
 # Technical Debt and Engineering Memory
 
-Use durable records to preserve project understanding across sessions. Keep facts, decisions, and actionable debt—not debugging diaries.
+Preserve durable facts, decisions, evidence, and resumable work—not debugging diaries.
 
-## Canonical files
+## Canonical control-plane assets
 
-Default to `docs/software-evolution/`:
+Default to:
 
-- `architecture-memory.md`
-- `capability-map.md`
-- `technical-debt.md`
+```text
+.software-evolution.yml
+docs/software-evolution/
+├── architecture-memory.md
+├── capability-map.md
+├── technical-debt.md
+├── health-baseline.json
+├── decisions/       # DEC-*.md
+├── batches/         # BATCH-*.md
+└── reports/
+    ├── audit/
+    ├── verification/
+    ├── release/
+    └── observation/
+```
 
-If repository rules already define equivalent durable files, update those instead and record the mapping. Do not duplicate competing sources of truth.
+If repository rules define equivalent durable sources, map to them instead of creating competitors. Never store credentials, secrets, personal data, raw sensitive logs, or short-lived tokens.
 
-## Architecture memory rules
+## Stable IDs
 
-Record:
+- `CAP-*`: business capability.
+- `FIND-*`: evidence-backed finding.
+- `DEBT-*`: tracked remediation obligation.
+- `DEC-*`: decision/authority record.
+- `BATCH-*`: repair/deep checkpoint.
+- `VER-*`: independent verification.
+- `REL-*`: release readiness review.
+- `FIT-*`: architecture fitness function.
 
-- Product/business purpose and primary actors.
-- Runtime/deployment map and critical flows.
-- Modules, domain boundaries, aggregate/data ownership, and dependency direction.
-- External contracts, queues/events, caches, permissions, and configuration boundaries.
-- Quality attributes and failure-sensitive areas.
-- Key decisions, constraints, prohibited patterns, and historical reasons.
-- Verification commands and last verified evidence.
+Reuse the canonical ID across reports and links; do not duplicate the same issue under new IDs.
 
-Mark entries as `verified`, `inferred`, or `unknown`. Correct stale memory when source/runtime evidence changes. Do not store secrets, personal data, or transient logs.
+## Architecture memory
 
-## Capability map rules
+Record product purpose/actors, runtime/deployment map, domains/data ownership, dependency direction, critical journeys, contracts/events/caches/flags, permissions/trust boundaries, quality attributes, release/rollback shape, telemetry, fitness functions, decisions, prohibited patterns, historical reasons, and verification commands.
 
-Record one row per business capability, not per method. Keep:
+Mark material entries `verified`, `inferred`, or `unknown`, with date/evidence. Correct stale memory when current evidence disagrees.
 
-- Stable capability ID and canonical business name.
-- Actor intent and business outcome.
-- Aggregate/data ownership.
-- Entry points, callers, and current implementation.
-- Inputs/outputs, invariants, authorization, and side effects.
-- Reuse classification and duplicate candidates.
-- Evidence and last verification date.
+## Capability map
 
-Preserve aliases/synonyms so future searches find existing capabilities.
+Record one row per business effect with aliases, actor/outcome, data owner, implementation, entry points/callers, inputs/outputs, invariants/authorization, state transition, side effects, consistency/deployment constraints, classification, reuse decision, and last evidence.
+
+## Health baseline
+
+Keep structured, non-secret baseline evidence for critical flows, quality gates, SLI/SLO, known failures, release/runtime identity, and observation gaps. Do not turn one sample into a permanent threshold or overwrite historical context without a new measured window.
 
 ## Technical-debt lifecycle
 
-Use statuses:
-
-- `candidate`: not sufficiently proven.
-- `ready`: proven with concrete remediation and verification.
-- `in_progress`: current coherent repair batch.
-- `partial`: some remediation landed but acceptance criteria remain.
-- `blocked`: decision, environment, dependency, or approval missing.
-- `verified`: remediation and required checks passed.
-- `accepted`: intentionally retained with reason and review trigger.
-- `obsolete`: no longer applies, with evidence.
+Statuses: `candidate`, `ready`, `in_progress`, `partial`, `blocked`, `verified`, `accepted`, `obsolete`.
 
 Priorities:
 
 - `P0`: active severe user/data/security/availability risk.
-- `P1`: incorrect core business behavior, high reliability risk, or rapidly multiplying architecture debt.
-- `P2`: material UX, maintainability, performance, or consistency cost.
-- `P3`: bounded cleanup or improvement with low immediate impact.
+- `P1`: incorrect core behavior, high reliability risk, or rapidly multiplying architecture debt.
+- `P2`: material UX, maintainability, performance/cost, consistency, or observability cost.
+- `P3`: bounded cleanup/improvement with low immediate impact.
 
-## Debt quality bar
+Every `ready` item needs root cause, evidence/scope, impact, remediation, compatibility, acceptance criteria, exact verification, and dependencies/decision gaps. Avoid vague “refactor later” entries.
 
-Every `ready` debt item must include:
+## Decisions and checkpoints
 
-- Problem and root cause.
-- Evidence and affected scope.
-- Why it matters now.
-- Proposed remediation and compatibility constraints.
-- Acceptance criteria and exact verification approach.
-- Dependencies/decision gaps.
-
-Do not use the debt file as a dumping ground for vague “refactor later” notes.
+- Decision records preserve authority, options, consequences, approval scope, and supersession.
+- Batch checkpoints preserve target identity, mode, drift metadata, budget, verification, approvals, and next safe action.
+- Reports preserve detailed evidence without bloating architecture memory.
 
 ## Concurrent updates
 
-Before modifying memory:
+Before writing any durable asset:
 
-1. Re-read the latest file.
-2. Update only the relevant sections/rows using stable IDs.
-3. Preserve other agents' entries and formatting where practical.
-4. If the same ID has conflicting concurrent edits, record the conflict and stop instead of overwriting it.
+1. Re-read the latest file/index.
+2. Merge only entries owned by the current governance thread using stable IDs.
+3. Preserve other agents' changes and formatting where practical.
+4. If the same ID conflicts, record the conflict and stop rather than overwriting.
+5. In read-only modes, do not persist unless `--record`/explicitly requested.
 
 ## End-of-run update
 
-At the end of each substantive governance batch:
-
-- Update facts and decisions that changed.
-- Add or change debt status with verification evidence.
-- Update capability ownership when implementation or callers changed.
-- Record the next safe action.
-- Keep detailed command logs in the governance report or repository state convention, not in architecture memory.
+Writable batches update only facts, decisions, debt statuses, capability ownership, health evidence, and next action supported by verification. Keep detailed command logs in the corresponding report/checkpoint or repository state convention.

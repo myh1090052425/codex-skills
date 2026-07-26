@@ -1,8 +1,9 @@
 # Software Evolution Governance Report
 
 - Date: `{{DATE}}`
-- Mode: `init|govern|deep|repair`
-- Scope: `TBD`
+- Mode: `init|audit|govern|repair|verify|deep|release-check|observe|resume`
+- Scope/target identity: `TBD`
+- Write contract and budget: `TBD`
 - Repository/branch/base: `TBD`
 - Coverage limitations: `TBD`
 

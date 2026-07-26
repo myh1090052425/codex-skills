@@ -1,80 +1,81 @@
 # Testing and Validation Governance
 
-Use tests as evidence of preserved behavior and repaired risk, not as a ceremony after editing.
+Apply the selected mode contract first. In a read-only mode, use this guidance only to inspect, prove, and report; do not execute the repair, convergence, or check-creation steps.
 
-## Build a verification matrix before change
+Use tests and runtime checks as evidence of preserved outcomes, not ceremony after editing.
 
-Map each affected behavior to the lowest useful test and required boundary checks:
+## Build the verification matrix first
 
 | Behavior | Primary evidence | Boundary evidence |
 |---|---|---|
-| Pure rule/invariant | Unit or table-driven test | Caller/contract test when mapping matters |
-| Service/use case | Unit/component test with real domain logic | Integration test for transaction or external adapter |
-| Persistence/query | Repository/database integration test | Query plan/benchmark for performance claims |
-| HTTP/API contract | Handler/contract test | End-to-end or consumer compatibility check |
-| Event/job workflow | Handler test with idempotency/error cases | Integration test for delivery/state effect |
-| UI state/interaction | Component test | Browser flow for routing/network/user feedback |
-| Cross-service/data migration | Contract/migration test | Staged environment validation and rollback proof |
+| Pure invariant/policy | Unit or table-driven test | Caller/contract test when mapping matters |
+| Service/use case | Component/unit with real domain logic | Integration test for transaction/adapter |
+| Persistence/query | Database/repository integration test | Query plan/benchmark/lock evidence |
+| HTTP/API/event contract | Handler/contract/consumer test | End-to-end and mixed-version compatibility |
+| Job/queue workflow | Handler test with failure/idempotency cases | Delivery/state-effect integration test |
+| UI interaction | Component test | Browser flow for route/network/feedback/accessibility |
+| Migration/cross-service change | Migration/schema/contract test | Staged environment, reconciliation, rollback/roll-forward |
+| Runtime reliability | Reproduction plus SLI/log/trace evidence | Post-fix observation window and threshold |
 
-## Baseline
+## Baseline before writable change
 
-Before editing when feasible:
+When feasible:
 
-- Reproduce the bug or capture a failing test.
-- Run directly relevant existing tests.
-- Record pre-existing failures and flaky behavior.
-- Capture runtime/API/UI behavior needed for before/after comparison.
+- Reproduce the bug or capture a failing check.
+- Run directly relevant existing checks.
+- Record pre-existing and flaky failures separately.
+- Capture before-state UI/API/job/runtime evidence.
+- Identify commands that write generated files, caches, databases, snapshots, or shared state.
 
-If a regression test cannot fail before the fix, explain why and use a characterization or invariant test instead.
+If a test cannot fail before the fix, explain why and use characterization/invariant evidence instead.
 
 ## Required checks after change
 
-Run in increasing scope according to risk:
+Run in increasing scope by risk:
 
-1. Changed test or direct regression test.
-2. Related package/module test suite.
-3. Type checker, linter, formatter check, and static analysis relevant to the changed files.
-4. Integration/contract/database tests for changed boundaries.
-5. Build/package checks.
+1. Direct regression/changed test.
+2. Related module/package suite.
+3. Relevant type/lint/format/static checks.
+4. Integration/contract/database/migration checks for changed boundaries.
+5. Build/package/artifact checks.
 6. API/UI/job smoke or end-to-end flow for externally visible behavior.
-7. Repository-wide checks only when risk or repository policy requires them.
+7. Architecture fitness, compatibility, release, and runtime-observation checks required by the risk class.
+8. Repository-wide checks only when repository policy or blast radius requires them.
 
-Also inspect:
+Also inspect final diff/status, changed callers, untested branches, contract/schema/migration behavior, resource cleanup, logs/console/network failures, and rollback.
 
-- Final `git diff` and `git diff --check` when Git exists.
-- Changed callers and untested branches.
-- Contract/schema/migration compatibility.
-- Logs, console/network failures, and resource cleanup for runtime changes.
+## Independent verification
 
-## Verification integrity
+`verify` must:
 
-Record exact command, working directory/environment, result, and relevant summary. Use only these statuses:
+- Identify the exact artifact/diff being accepted.
+- Derive expected behavior independently from authoritative sources.
+- Inspect tests for implementation mirroring and missing negative/boundary cases.
+- Reproduce evidence where safe rather than trusting a repair report.
+- Avoid modifying code/tests when a check fails.
+- Return `VERIFIED`, `PARTIAL`, `FAILED`, `BLOCKED`, or `UNKNOWN` with proof.
 
-- `passed`: command/flow ran and met the criterion.
-- `failed`: command/flow ran and did not meet it.
-- `blocked`: required dependency/environment/permission was unavailable.
-- `not run`: deliberately omitted with a reason.
+The same Agent may perform implementation and a later verification pass, but it must re-orient from the artifact and acceptance sources rather than treating its previous conclusion as evidence.
 
-Do not write “all tests passed” when only a subset ran. A build is not a test; a test is not runtime UX validation; a mocked unit test is not a contract or migration proof.
+## Read-only command safety
 
-## Test quality checks
+In read-only modes, run only commands known to be observational or isolated. Test runners may update snapshots, databases, lockfiles, coverage files, or generated source; inspect documented behavior and use disposable environments. If safety cannot be established, do not run the command and mark the check `blocked`/`not run`.
 
-Tests must:
+## Evidence integrity
 
-- Assert business outcomes and invariants, not implementation trivia.
-- Cover the original failure or drift boundary.
-- Include negative, boundary, retry/idempotency, and permission cases when relevant.
-- Avoid reproducing the same duplicated rule in test setup.
-- Remain deterministic and isolated from production/shared mutable resources.
-- Fail for the intended reason.
+For every check record exact command/flow, working directory/environment, target revision/version, result, and relevant summary. Use only:
 
-## Failure handling
+- `passed`
+- `failed`
+- `blocked`
+- `not run`
 
-- Diagnose the first failure before broad editing.
-- Distinguish product failure, test defect, environment failure, and pre-existing failure.
-- After three failed attempts based on the same hypothesis, stop, summarize the evidence, and re-plan or request the missing information.
-- Never disable or weaken a valid test merely to obtain a green result.
+A build is not a behavioral test; a mocked unit test is not a contract proof; HTTP 200 is not a business-success proof; a short observation window cannot prove long-cycle reliability.
+
+## Test quality
+
+Tests must assert outcomes/invariants, cover the original failure boundary, include negative/boundary/retry/idempotency/permission cases when relevant, avoid duplicating the production rule in setup, remain deterministic, and fail for the intended reason.
 
 ## Completion rule
 
-A repair is `verified` only when the checks required by its risk class pass. Otherwise label it `partial`, `blocked`, or `failed`, preserve the exact gap, and avoid claiming completion.
+A repair is `verified` only when risk-required checks pass. A release is `READY` only when target-specific mandatory gates pass. An operational repair needing runtime evidence remains `partial` until its defined observation window and thresholds are evaluated.

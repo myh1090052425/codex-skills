@@ -10,7 +10,7 @@
 
 ## 活跃线程索引
 
-- 当前无活跃线程。
+- [Software Evolution 控制面与治理闭环升级](2026-07-26-software-evolution-control-plane-v1.md) — 待提交/发布；九种模式、治理控制面、七角度 Review 和 19 项测试已完成。
 
 ## 已完成/归档
 
@@ -18,9 +18,9 @@
 
 ## 候选下一步
 
-1. 在真实项目中运行 `$software-evolution init` 做首轮前向验证。
-2. 根据真实项目反馈迭代治理规则、风险阈值和模板。
-3. 如需面向更多用户分发，再将 Skill 封装为 Codex Plugin。
+1. 提交并推送控制面升级，确认 GitHub Actions `Validate Skill` 通过。
+2. 在真实项目中分别前向验证 `audit`、`govern`、`verify`、`release-check` 和 `resume`。
+3. 根据真实项目反馈迭代治理规则、风险阈值和专项 Skill 路由。
 
 ## 阻塞
 
@@ -28,6 +28,7 @@
 
 ## 最近提交
 
+- `e9dfc3e docs: 更新 GitHub 发布状态`
 - `dc004c6 docs: 补充使用说明和项目状态`
 - `440d3c5 feat: 创建 AI Software Evolution Agent Skill`
 

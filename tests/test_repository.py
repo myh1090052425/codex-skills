@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -9,13 +10,15 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "software-evolution"
 BOOTSTRAP = SKILL / "scripts" / "bootstrap_project_memory.py"
+INTEGRITY = SKILL / "scripts" / "check_skill_integrity.py"
+VALIDATOR = SKILL / "scripts" / "validate_project_config.py"
 INSTALLER = ROOT / "install.py"
 
 
 class RepositoryTests(unittest.TestCase):
-    def test_bootstrap_creates_and_preserves_memory(self) -> None:
+    def test_bootstrap_creates_complete_control_plane_and_preserves_files(self) -> None:
         with tempfile.TemporaryDirectory(prefix="software-evolution-bootstrap-") as tmp:
-            project = Path(tmp) / "sample-project"
+            project = Path(tmp) / 'sample-"project'
             project.mkdir()
 
             first = subprocess.run(
@@ -31,23 +34,87 @@ class RepositoryTests(unittest.TestCase):
                     "architecture-memory.md",
                     "capability-map.md",
                     "technical-debt.md",
+                    "health-baseline.json",
+                    "decisions",
+                    "batches",
+                    "reports",
                 },
             )
-            self.assertIn("created=3", first.stdout)
+            self.assertEqual(
+                {path.name for path in (memory / "reports").iterdir()},
+                {"audit", "verification", "release", "observation"},
+            )
+            config = project / ".software-evolution.yml"
+            self.assertTrue(config.is_file())
+            self.assertIn("created_files=5", first.stdout)
+            self.assertIn("created_dirs=6", first.stdout)
+            health = json.loads((memory / "health-baseline.json").read_text(encoding="utf-8"))
+            self.assertEqual('sample-"project', health["project"])
+            self.assertEqual('sample-"project', health["repository"])
+            for generated in (
+                memory / "architecture-memory.md",
+                memory / "capability-map.md",
+                memory / "technical-debt.md",
+                memory / "health-baseline.json",
+            ):
+                self.assertNotIn(str(project.parent), generated.read_text(encoding="utf-8"))
+            subprocess.run(
+                ["python3", str(VALIDATOR), "--config", str(config)],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
 
             architecture = memory / "architecture-memory.md"
             architecture.write_text(
                 architecture.read_text(encoding="utf-8") + "\nSENTINEL\n",
                 encoding="utf-8",
             )
+            config.write_text(config.read_text(encoding="utf-8") + "\n# SENTINEL\n", encoding="utf-8")
             second = subprocess.run(
                 ["python3", str(BOOTSTRAP), "--root", str(project), "--date", "2026-07-26"],
                 text=True,
                 capture_output=True,
                 check=True,
             )
-            self.assertIn("skipped=3", second.stdout)
+            self.assertIn("skipped_files=5", second.stdout)
+            self.assertIn("existing_dirs=6", second.stdout)
             self.assertIn("SENTINEL", architecture.read_text(encoding="utf-8"))
+            self.assertIn("SENTINEL", config.read_text(encoding="utf-8"))
+
+    def test_bootstrap_dry_run_is_non_destructive(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="software-evolution-dry-run-") as tmp:
+            project = Path(tmp) / 'sample-"project'
+            project.mkdir()
+            result = subprocess.run(
+                ["python3", str(BOOTSTRAP), "--root", str(project), "--dry-run"],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            self.assertIn("CREATE_DIR", result.stdout)
+            self.assertIn("CREATE", result.stdout)
+            self.assertEqual([], list(project.iterdir()))
+
+    def test_bootstrap_rejects_relative_paths_that_escape_project(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="software-evolution-escape-") as tmp:
+            project = Path(tmp) / "sample-project"
+            project.mkdir()
+            result = subprocess.run(
+                [
+                    "python3",
+                    str(BOOTSTRAP),
+                    "--root",
+                    str(project),
+                    "--output-dir",
+                    "../outside",
+                ],
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(2, result.returncode)
+            self.assertIn("escapes project root", result.stderr)
+            self.assertFalse((Path(tmp) / "outside").exists())
 
     def test_installer_supports_symlink_and_copy(self) -> None:
         with tempfile.TemporaryDirectory(prefix="software-evolution-install-") as tmp:
@@ -81,6 +148,19 @@ class RepositoryTests(unittest.TestCase):
             )
             self.assertFalse(copy_target.is_symlink())
             self.assertTrue((copy_target / "SKILL.md").is_file())
+            self.assertTrue((copy_target / "workflows" / "audit.md").is_file())
+            self.assertTrue((copy_target / "scripts" / "check_checkpoint_drift.py").is_file())
+            self.assertFalse(any(path.name == "__pycache__" for path in copy_target.rglob("*")))
+            self.assertFalse(any(path.suffix == ".pyc" for path in copy_target.rglob("*")))
+
+    def test_skill_integrity_script(self) -> None:
+        result = subprocess.run(
+            ["python3", str(INTEGRITY)],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        self.assertIn("9 mode contracts", result.stdout)
 
 
 if __name__ == "__main__":

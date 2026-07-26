@@ -1,5 +1,7 @@
 # User Experience Governance
 
+Apply the selected mode contract first. In a read-only mode, use this guidance only to inspect, prove, and report; do not execute the repair, convergence, or check-creation steps.
+
 Evaluate whether real users can understand, complete, and recover from tasks—not merely whether UI elements exist.
 
 ## Evidence order
@@ -30,12 +32,12 @@ Prioritize revenue, safety, compliance, onboarding, frequent, and support-heavy 
 When browser automation is available:
 
 1. Use documented local start commands and seeded/test credentials.
-2. Verify the environment is non-production before mutating data.
+2. Verify the environment is non-production. Read-only modes must not mutate application data; use existing fixtures/read-only journeys or record the blocked coverage.
 3. Traverse navigation before deep-linking so findability is tested.
-4. Exercise a representative create/read/update/delete or equivalent business flow.
+4. Only in a writable mode, or init with a disposable isolated test environment, exercise a representative create/read/update/delete or equivalent business flow.
 5. Inspect visible feedback, keyboard/focus behavior when relevant, console errors, failed requests, and stale UI state.
 6. Capture screenshots or traces for material visual/flow findings.
-7. Repeat the repaired flow after automated checks pass.
+7. In a writable mode, repeat the repaired flow after automated checks pass; read-only modes stop at evidence and handoff.
 
 Do not bypass authentication. If credentials are unavailable, test public flows and record the blocked authenticated coverage.
 
