@@ -10,10 +10,10 @@
 
 ## 活跃线程索引
 
-- [Software Evolution 真实运行行为纠偏](2026-07-27-software-evolution-real-run-correctness-v1.md) — 本地实现与 50 项测试通过，待推送和 GitHub Actions；新增三主线覆盖、浏览器门禁、schema-v3 完成证明和比例化控制面。
 
 ## 已完成/归档
 
+- [Software Evolution 真实运行行为纠偏](2026-07-27-software-evolution-real-run-correctness-v1.md) — 2026-07-27 完成；三主线覆盖、稳定父 Run、浏览器门禁、schema-v3 完成证明、比例化控制面、50 项测试和 GitHub Actions 已通过。
 - [Software Evolution 去除人为数量配额](2026-07-26-software-evolution-remove-artificial-quotas-v1.md) — 2026-07-26 完成；人工文件/Finding/Cycle/Batch/Window 配额已退出有效控制面，连续自治、旧配置兼容、35 项测试、多角度 Review 与 GitHub Actions 已通过。
 - [Software Evolution 连续预算与自动续跑修复](2026-07-26-software-evolution-continuous-budget-v1.md) — 2026-07-26 完成；该版本的双层数量预算后来被确认违背持续自治目标，已由“去除人为数量配额”线程废弃并迁移。
 - [Software Evolution 单命令 Autopilot 与睡后编程](2026-07-26-software-evolution-autopilot-v1.md) — 2026-07-26 完成；零前置 Autopilot、Overnight 睡后编程、RUN/BATCH 恢复、八角度 Review、25 项测试和 GitHub Actions 已完成。
@@ -22,8 +22,8 @@
 
 ## 候选下一步
 
-1. 推送本线程改动并确认 GitHub Actions `Validate Skill` 成功。
-2. 继续在真实项目中验证 `$software-evolution overnight`、`verify RUN-*` 和真实中断后的 `resume RUN-*`。
+1. 在新的真实项目 Run 中验证三主线候选均衡、浏览器完成门禁和 schema-v3 Validator。
+2. 继续验证 `$software-evolution overnight`、`verify RUN-*` 和真实中断后的 `resume RUN-*`。
 3. 根据长期运行数据迭代治理规则、风险阈值、Checkpoint/恢复策略和专项 Skill 路由。
 4. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
 
@@ -33,6 +33,7 @@
 
 ## 最近提交
 
+- `b1a5a23 fix: 强化 Autopilot 覆盖与完成证明`
 - `10c74ec fix: 移除 Autopilot 人为数量配额`
 - `6c96a79 fix: 修复 Autopilot 预算记账与自动续跑`
 - `d793893 feat: 实现单命令 Autopilot 与睡后编程`
@@ -49,3 +50,4 @@
 - GitHub Actions 的 `Validate Skill` 必须通过后才可宣称仓库发布有效。
 - Autopilot 的活跃 invocation owner 是并发边界；新 Run 元数据必须记录可机读 deadline/heartbeat，禁止接管或创建范围重叠的新 Run。
 - 文件、Finding、Cycle、Batch 和耗时只作遥测；自治是否继续由风险、业务权威、可逆性、验证、并行漂移和 Host 生命周期决定。
+- 无参数连续 Run 保持仓库级父范围，并维护用户/业务、工程/可靠性、架构/演进三主线；可运行 UI 和 `safe work exhausted` 必须通过运行态与 schema-v3 完成证明。
