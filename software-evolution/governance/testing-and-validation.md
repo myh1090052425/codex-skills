@@ -40,7 +40,11 @@ Run in increasing scope by risk:
 5. Build/package/artifact checks.
 6. API/UI/job smoke or end-to-end flow for externally visible behavior.
 7. Architecture fitness, compatibility, release, and runtime-observation checks required by the risk class.
-8. Repository-wide checks only when repository policy or blast radius requires them.
+8. Repository-wide checks only when repository policy, aggregate acceptance, or blast radius requires them.
+
+For a sequence of sibling repairs, do not rerun an unchanged expensive gate after every edit by default. Reuse it only when the exact command, environment, target revision, relevant inputs, changed paths, and dependency fingerprints are unchanged; record the prior receipt and fingerprint. Run narrow checks per repair, related/package checks per coherent wave, and aggregate repository checks before a completion claim or whenever risk invalidates reuse.
+
+For a user-visible repair in a safely runnable application, a component test is the primary regression check but not the final user-outcome check. Repeat the affected browser journey and inspect visible feedback plus console/network failures.
 
 Also inspect final diff/status, changed callers, untested branches, contract/schema/migration behavior, resource cleanup, logs/console/network failures, and rollback.
 
@@ -78,4 +82,4 @@ Tests must assert outcomes/invariants, cover the original failure boundary, incl
 
 ## Completion rule
 
-A repair is `verified` only when risk-required checks pass. A release is `READY` only when target-specific mandatory gates pass. An operational repair needing runtime evidence remains `partial` until its defined observation window and thresholds are evaluated.
+A repair is `verified` only when risk-required checks pass. A continuous Run is not complete merely because every repair in the current taxonomy is verified; it must also satisfy the cross-lane and runtime evidence gate in [coverage-and-completion.md](coverage-and-completion.md) and pass `validate_run_completion.py`. A release is `READY` only when target-specific mandatory gates pass. An operational repair needing runtime evidence remains `partial` until its defined observation window and thresholds are evaluated.

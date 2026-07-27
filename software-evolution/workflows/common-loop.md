@@ -26,14 +26,16 @@ Treat engineering memory and health baselines as hypotheses. Correct stale entri
 
 ### 3. Declare scope and verification approach
 
-Prefer user scope, then current changes, critical journeys, ready debt, and evidence-backed hotspots. Declare:
+Prefer user scope, then current changes, critical journeys, ready debt, and evidence-backed hotspots. For continuous modes, distinguish the parent Run scope from the current Batch/discovery cluster. With no explicit user scope, the parent Run remains repository/system-wide; a narrow repair must not rewrite it. Declare:
 
-- Included modules/flows/contracts and explicit exclusions.
+- Parent Run scope, current Batch/discovery scope, included modules/flows/contracts, and explicit exclusions.
 - Target identity: working tree, branch/base, commit, PR, release, service, or observation window.
 - Expected behavior, affected callers, risk class, rollback/roll-forward approach, and required verification.
 - Specialist routes and environments that are unavailable or unsafe.
 
 Do not declare arbitrary maximum files, findings, cycles, repair batches, or scope items. Do not claim repository-wide, production-wide, or release-wide coverage beyond the evidence actually gathered.
+
+For unscoped `autopilot`/`overnight` and repository-wide `deep`, initialize the three-lane candidate portfolio from [../governance/coverage-and-completion.md](../governance/coverage-and-completion.md). Record the next evidence target for user/business outcomes, engineering/reliability, and architecture/evolution before deepening one cluster.
 
 ### 4. Inspect and prove
 
@@ -51,9 +53,11 @@ Classify evidence:
 - `probable`: strong evidence with one material gap and an explicit validation path.
 - `candidate`: useful lead, not ready for repair or release blocking unless risk demands caution.
 
-### 5. Prioritize
+### 5. Prioritize globally
 
 Order by user/data/security/availability harm, business correctness, reliability, architecture multiplication, UX impact, and then maintainability/cost. Break ties with confidence, blast radius, recurrence, reversibility, and verification quality.
+
+Compare the strongest current candidate from every applicable governance lane. Before selecting another sibling from the same module/taxonomy/test pattern, record why it outranks cross-lane alternatives. Ease of grep, unit testing, or patching is not a priority signal.
 
 ### 6. Decide the route
 
@@ -100,8 +104,9 @@ Reproduce the issue or capture characterization evidence when feasible. Run dire
 3. Run the narrow check immediately.
 4. Inspect the diff for accidental churn and record changed paths as telemetry.
 5. Run risk-required broader checks.
-6. Exercise the user/API/job flow when externally visible.
+6. Exercise the user/API/job flow when externally visible. If a user-facing application is safely runnable and browser automation exists, repeat the affected browser journey; component tests alone are insufficient.
 7. Re-scan callers, rules, capability ownership, boundaries, and fitness functions.
+8. Refresh the parent Run's three-lane candidate portfolio so the current defect family does not become the implicit Run scope.
 
 Stop the same failed hypothesis after three attempts, record evidence, and re-plan. Continue other independent safe work. Do not begin a change when the required verification cannot be completed with the available environment and host lifecycle.
 
@@ -118,15 +123,21 @@ Stop the same failed hypothesis after three attempts, record evidence, and re-pl
 - Update capability/architecture memory when ownership, contracts, rules, or runtime facts changed.
 - Update health baseline only from measured evidence.
 - Persist exact verification status, change metrics, remaining work, Git identity, and next safe action.
-- In `autopilot`/`overnight`/`deep`, update the parent `RUN-*` ledger when present and immediately continue with another safe verified batch. One successful repair, large diff, or high file count is not a stop condition.
+- Keep the parent `RUN-*` ledger canonical. Reuse existing finding/debt/decision/verification records and create a standalone `BATCH-*` only when risk, drift recovery, compatibility staging, repository policy, or handoff complexity requires it.
+- Reuse unchanged expensive verification only with matching command/environment/revision/input/dependency fingerprints; otherwise rerun the risk-required gate.
+- In `autopilot`/`overnight`/`deep`, immediately continue with the globally highest-value safe verified batch. One successful repair, large diff, high file count, or exhaustion of the current defect family is not a stop condition.
 
-## Stop conditions
+## Stop and completion conditions
 
-Stop safely only when:
+Quarantine an exhausted hypothesis without ending unrelated safe work. Never convert an incomplete batch or one exhausted taxonomy into a completion claim.
 
-- No actionable repair-ready finding remains after re-scan.
-- Required evidence, environment, authority, approval, or specialist capability is unavailable for every remaining item.
-- A protected/irreversible boundary or conflicting drift blocks all available work.
-- The host interrupts, suspends, rate-limits, or ends the task.
+A continuous Run may use `safe_work_exhausted` only after the last material repair and the completion proof in [../governance/coverage-and-completion.md](../governance/coverage-and-completion.md):
 
-Quarantine an exhausted hypothesis without ending unrelated safe work. Never convert an incomplete batch into a completion claim. Preserve a checkpoint or read-only finding instead. Use explicit `resume` only for true interruption, drift, ambiguity, or targeted recovery—not normal batch continuation.
+- all three governance lanes were freshly covered or explicitly blocked for the declared parent Run scope;
+- runnable user-facing surfaces have browser/runtime evidence or an exact blocker;
+- a deliberate counterexample search outside the current module/taxonomy/test pattern found no repair-ready work;
+- Ready/In-progress debt, findings, recent changes, capability duplicates, business-rule splits, critical journeys, and known health failures were reconciled;
+- no item remains with known authority, rollback, and fully executable risk-required verification;
+- the schema-v3 Run ledger passes `validate_run_completion.py`.
+
+Use truthful `blocked`, `partial`, or `interrupted` status when evidence, environment, authority, approval, specialist capability, protected boundaries, drift, or Host lifecycle prevents completion. Do not mark a host durable goal complete until the Run completion validator passes. Preserve a checkpoint and next safe action. Use explicit `resume` only for true interruption, drift, ambiguity, or targeted recovery—not normal batch continuation.

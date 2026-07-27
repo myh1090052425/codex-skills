@@ -18,6 +18,9 @@
 - Originating mode/target: `TBD`
 - Status: `planned|in_progress|verified|partial|blocked|failed|abandoned`
 - Risk class: `R1|R2|R3|R4`
+- Governance lane: `user_business|engineering_reliability|architecture_evolution|cross_cutting`
+- Parent Run scope / narrow Batch scope: `TBD`
+- Standalone Batch record required because: `risk|drift|compatibility|repository_policy|handoff_complexity`
 
 ## Goal and invariant
 
@@ -43,6 +46,7 @@ These values are telemetry, never execution limits.
 - Changes completed: `TBD`
 - Regression/characterization evidence: `TBD`
 - Last passed gate: `TBD`
+- Reused verification receipt + unchanged-input fingerprint/reason: `none|TBD`
 - Failed/blocked/not-run checks: `TBD`
 - Current diff/callers/compatibility state: `TBD`
 - Decisions/approvals and expiry: `TBD`
@@ -52,6 +56,8 @@ These values are telemetry, never execution limits.
 
 - Continue automatically after checkpoint: `yes|no + real reason`
 - Explicit Resume required: `yes|no + reason`
+- Parent Run scope remains unchanged after this Batch: `yes|no + correction`
+- Cross-lane portfolio refresh after this Batch: `TBD`
 - Next smallest safe semantic action: `TBD`
 - Commands/evidence to revalidate first: `TBD`
 - Stop/rollback condition: `TBD`

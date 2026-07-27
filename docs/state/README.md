@@ -1,6 +1,6 @@
 # Project State
 
-- 更新时间：2026-07-26
+- 更新时间：2026-07-27
 - 仓库：`myh1090052425/codex-skills`
 - 默认分支：`main`
 
@@ -10,6 +10,7 @@
 
 ## 活跃线程索引
 
+- [Software Evolution 真实运行行为纠偏](2026-07-27-software-evolution-real-run-correctness-v1.md) — 本地实现与 50 项测试通过，待推送和 GitHub Actions；新增三主线覆盖、浏览器门禁、schema-v3 完成证明和比例化控制面。
 
 ## 已完成/归档
 
@@ -21,9 +22,10 @@
 
 ## 候选下一步
 
-1. 继续在真实项目中验证 `$software-evolution overnight`、`verify RUN-*` 和真实中断后的 `resume RUN-*`。
-2. 根据长期运行数据迭代治理规则、风险阈值、Checkpoint/恢复策略和专项 Skill 路由。
-3. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
+1. 推送本线程改动并确认 GitHub Actions `Validate Skill` 成功。
+2. 继续在真实项目中验证 `$software-evolution overnight`、`verify RUN-*` 和真实中断后的 `resume RUN-*`。
+3. 根据长期运行数据迭代治理规则、风险阈值、Checkpoint/恢复策略和专项 Skill 路由。
+4. 为被频繁触发的安全、数据库、UX、性能/成本领域逐步建设独立专项 Skill。
 
 ## 阻塞
 

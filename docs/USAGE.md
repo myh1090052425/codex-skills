@@ -26,7 +26,7 @@ python3 install.py --target ~/.agents/skills/software-evolution
 $software-evolution
 ```
 
-默认进入 `autopilot`。控制面不存在时自动创建；若当前分支只有一个明确、非活跃且可安全恢复的 `partial` Run，则先验证漂移并自动接管。每个语义完整的修复批次完成验证和 Checkpoint 后会在同一次调用中继续下一项安全工作；**不会要求用户再执行 `init → audit → govern`，也不会因为文件、Finding、Cycle 或 Batch 数量要求 `resume`。**
+默认进入 `autopilot`。控制面不存在时自动创建；若当前分支只有一个明确、非活跃且可安全恢复的 `partial` Run，则先验证漂移并自动接管。无参数 Run 的父范围保持为整个仓库/系统，当前修复簇不会缩小它；Agent 同时维护用户/业务、工程/可靠性、架构/演进三条候选主线。每个语义完整的修复批次完成验证和 Checkpoint 后会在同一次调用中继续全局最高价值的安全工作；**不会要求用户再执行 `init → audit → govern`，也不会因为文件、Finding、Cycle 或 Batch 数量要求 `resume`。**
 
 ```text
 .software-evolution.yml
@@ -59,7 +59,7 @@ $software-evolution autopilot
 $software-evolution autopilot src/orders
 ```
 
-零前置启动：缺少控制面时自动初始化，配置先合并为 `effective_config`，然后循环执行建模、发现、证明、优先级、修复、测试、验证、复扫和记忆更新。每批按根因、业务能力、不变量、契约边界或兼容阶段划分；Checkpoint 用于恢复和审计，不是暂停点。只要仍有安全且可完整验证的工作，就在同一次调用中继续。
+零前置启动：缺少控制面时自动初始化，配置先合并为 `effective_config`，然后循环执行建模、三主线发现、证明、全局优先级、修复、测试、验证、复扫和记忆更新。每批按根因、业务能力、不变量、契约边界或兼容阶段划分；Checkpoint 用于恢复和审计，不是暂停点。连续选择同一问题族前必须与另外两条主线比较；只要任一主线仍有安全且可完整验证的工作，就在同一次调用中继续。
 
 ### `overnight [scope]`：睡后编程
 
@@ -105,7 +105,7 @@ $software-evolution govern
 $software-evolution govern src/orders
 ```
 
-优先治理用户范围、当前改动、分支 Diff、Ready 技术债和关键流程。可以完成 R1 和边界明确的 R2 小批次修复；每批必须补测试、验证、复扫并建立 `BATCH-*` Checkpoint。
+优先治理用户范围、当前改动、分支 Diff、Ready 技术债和关键流程。可以完成 R1 和边界明确的 R2 小批次修复；每批必须补测试、验证和复扫。默认复用现有 Finding/Debt 与 Run 账本，仅在风险、漂移、兼容分阶段或复杂交接需要时建立独立 `BATCH-*`。
 
 ### `repair [id/scope]`：定向修复
 
@@ -183,7 +183,8 @@ Scope 可以是：文件、目录、模块、页面、业务流程、Capability�
 - `FIND-*` 发现
 - `DEBT-*` 技术债
 - `DEC-*` 决策
-- `BATCH-*` 批次检查点
+- `BATCH-*` 需要独立恢复/交接的批次检查点
+- `RUN-*` 连续治理父账本
 - `VER-*` 验收
 - `REL-*` 发布检查
 - `FIT-*` 架构适应度检查
@@ -245,7 +246,12 @@ JSON 输出同时包含原始 `config`、合并默认值后的 `effective_config
 - 一个批次由一个根因、业务能力、不变量、契约边界或兼容阶段定义，不按文件数量机械拆分。
 - 文件数、Diff 大小、Finding 数、Cycle、Batch 数和耗时只作 Blast Radius、审计、趋势和恢复遥测。
 - 大范围修复必须有更强的调用方分析、回滚方案和验证证据，但不会仅因文件多而失去授权。
-- 真实停止条件只有：无安全可修问题；剩余项缺业务权威、审批、证据、环境或专项能力；涉及受保护外部操作/R3/R4 决策；冲突漂移；所有候选假设均被隔离；或宿主中断、挂起、限流、结束任务。
+- 父 `RUN-*` 范围与当前 Batch/发现簇分离；无参数运行保持仓库级范围，并持续维护用户/业务、工程/可靠性、架构/演进三主线候选组合。
+- 可安全运行的 UI 在完成前必须有浏览器关键旅程证据；用户可见修复后必须复验受影响旅程。
+- `safe work exhausted` 必须在最后一次实质修复后执行跨主线、簇外反例搜索，核对开放债务、近期变化、能力重复、业务规则分裂、关键旅程和健康失败。
+- schema-v3 `RUN-*` 只有在覆盖矩阵、聚合验证、完成挑战和终止原因没有 `TBD` 占位证据，且 `validate_run_completion.py` 返回 `OK` 后才能标记 `completed`；否则使用真实的 `partial`、`blocked` 或 `interrupted`。
+- 相同命令、环境、Revision、输入、依赖与受影响路径指纹未变化时可以复用昂贵验证；任何相关输入变化都必须重跑风险所需门禁。
+- 真实停止条件只有：完成证明确认无安全可修问题；剩余项缺业务权威、审批、证据、环境或专项能力；涉及受保护外部操作/R3/R4 决策；冲突漂移；所有候选假设均被隔离；或宿主中断、挂起、限流、结束任务。
 - 同一修复假设连续失败三次时只隔离该假设，Agent 继续处理其他独立安全工作。
 - 另一个活跃 invocation owner 的 branch/scope 是并发边界，Agent 不会接管或创建重叠 Run。
 

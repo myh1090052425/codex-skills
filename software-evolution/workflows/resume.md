@@ -7,7 +7,7 @@ Use explicit `resume` for a drifted, ambiguous, specifically targeted, or otherw
 ## Procedure
 
 1. Resolve the supplied ID/path. For `RUN-*`, read [../templates/autopilot-run.md](../templates/autopilot-run.md), verify profile/status/repository identity/owner, and resolve `latest_batch_id`. For `BATCH-*`, resolve [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). If multiple equally relevant candidates exist, do not guess. If no valid checkpoint metadata exists, remain read-only and rebuild orientation before creating any new batch.
-2. Read the originating mode, target, authority, verification status, real stop reason, changed-path telemetry, and next safe action. Treat historical file/cycle/window/finding/batch quotas as deprecated evidence, never as remaining authority or stop conditions.
+2. Read the originating mode, parent Run scope versus current Batch/discovery scope, three-lane coverage, target, authority, verification status, real stop reason, changed-path telemetry, and next safe action. Treat historical file/cycle/window/finding/batch quotas as deprecated evidence, never as remaining authority or stop conditions. Migrate an active legacy Run to schema v3 before any future `completed` claim; preserve its historical content and add coverage metadata rather than rewriting history.
 3. Validate project configuration with JSON output and use `effective_config`. Record and ignore `deprecated_paths`. Run:
 
 ```bash
@@ -22,7 +22,8 @@ python3 <skill-root>/scripts/check_checkpoint_drift.py \
    - `CONFLICTING_DRIFT`: stop the old path; create a new batch only under a valid non-conflicting contract.
    - `UNKNOWN`: remain read-only and reconstruct orientation.
 5. Revalidate time-sensitive dependencies, generated artifacts, environments, approvals, business decisions, and the last successful verification. Discard invalidated conclusions.
-6. Continue from the smallest safe semantic step. Do not reset or recreate obsolete quota counters. A resumed Autopilot/Overnight/Deep run checkpoints each batch and continues until a real stop condition.
+6. Continue from the smallest safe semantic step without shrinking the parent Run to the recovered Batch path. Rebuild the three-lane candidate portfolio. Do not reset or recreate obsolete quota counters. Continue until the cross-lane completion gate passes or a truthful interruption/blocking status applies.
+7. Before setting a resumed continuous Run or Host durable goal to `completed`, run `validate_run_completion.py` against the schema-v3 Run ledger. A normal checkpoint, recovered batch, or exhausted defect family is not completion.
 
 ## Safety rules
 

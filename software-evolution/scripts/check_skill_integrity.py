@@ -42,6 +42,7 @@ REQUIRED_FILES = {
     "governance/observability-and-sre.md",
     "governance/continuity-and-drift.md",
     "governance/architecture-fitness.md",
+    "governance/coverage-and-completion.md",
     "templates/finding-record.md",
     "templates/repair-plan.md",
     "templates/verification-record.md",
@@ -65,6 +66,7 @@ REQUIRED_FILES = {
     "scripts/check_skill_integrity.py",
     "scripts/validate_project_config.py",
     "scripts/check_checkpoint_drift.py",
+    "scripts/validate_run_completion.py",
 }
 MODE_WORKFLOWS = {
     "autopilot": ("workflows/autopilot.md", "WRITE POLICY: CONTINUOUS_WRITE"),
@@ -211,18 +213,58 @@ def validate_templates(root: Path, errors: list[str]) -> None:
                     "status",
                     "branch",
                     "head",
+                    "scope_kind",
                     "scope_paths",
                     "latest_batch_id",
                     "predecessor_run_id",
                     "invocation_id",
                     "host_deadline",
                     "last_heartbeat_at",
+                    "coverage",
+                    "terminal_reason",
                 }
                 missing = sorted(required - set(metadata))
                 if missing:
                     errors.append("autopilot run metadata missing fields: " + ", ".join(missing))
-                if metadata.get("schema_version") != 2:
-                    errors.append("autopilot run schema_version must be 2")
+                if metadata.get("schema_version") != 3:
+                    errors.append("autopilot run schema_version must be 3")
+                coverage = metadata.get("coverage")
+                required_coverage = {
+                    "user_business",
+                    "engineering_reliability",
+                    "architecture_evolution",
+                    "runtime_ux",
+                    "cross_lane_challenge",
+                    "open_repair_ready_work",
+                }
+                if not isinstance(coverage, dict):
+                    errors.append("autopilot run coverage must be an object")
+                else:
+                    missing_coverage = sorted(required_coverage - set(coverage))
+                    if missing_coverage:
+                        errors.append(
+                            "autopilot run coverage missing fields: "
+                            + ", ".join(missing_coverage)
+                        )
+
+        completion_validator = root / "scripts" / "validate_run_completion.py"
+        if completion_validator.is_file():
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(completion_validator),
+                    "--run",
+                    str(run_template),
+                    "--json",
+                ],
+                text=True,
+                capture_output=True,
+            )
+            if result.returncode != 0:
+                errors.append(
+                    "autopilot run template failed completion validation: "
+                    + (result.stdout + result.stderr).strip()
+                )
 
     config = root / "memory" / "software-evolution.config.template.yml"
     validator = root / "scripts" / "validate_project_config.py"
@@ -310,6 +352,14 @@ def validate_continuous_autopilot_contract(root: Path, errors: list[str]) -> Non
             "telemetry only",
             "One successful repair, a large diff, or a high file count is never a stop condition",
             "Do not start a repair whose required verification cannot be completed",
+            "scope_kind=repository",
+            "three-lane candidate portfolio",
+            "cross-lane alternatives",
+            "browser journey",
+            "Checkpoint proportionally",
+            "durable goal/continuation primitive",
+            "validate_run_completion.py",
+            "exhaustion of the current defect family",
             "## Real stop conditions",
         ),
         errors,
@@ -348,6 +398,25 @@ def validate_continuous_autopilot_contract(root: Path, errors: list[str]) -> Non
             "Counts are telemetry only",
             "Legacy quota caused this stop: `must be no`",
             "Invocation owner / last heartbeat",
+            "## Governance coverage matrix",
+            "## Completion challenge",
+            "Parent Run scope remains stable across narrow batches",
+            "Reused unchanged verification receipts",
+            "Host durable goal completion allowed",
+        ),
+        errors,
+    )
+    require_phrases(
+        root,
+        "governance/coverage-and-completion.md",
+        (
+            "## Three core governance lanes",
+            "## Keep run scope separate from batch scope",
+            "## Runtime experience gate",
+            "## Cross-lane completion challenge",
+            "## Proportional control plane",
+            "validate_run_completion.py",
+            "host durable goal",
         ),
         errors,
     )

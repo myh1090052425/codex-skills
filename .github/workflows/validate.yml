@@ -19,11 +19,16 @@ jobs:
             software-evolution/scripts/bootstrap_project_memory.py \
             software-evolution/scripts/check_skill_integrity.py \
             software-evolution/scripts/validate_project_config.py \
-            software-evolution/scripts/check_checkpoint_drift.py
+            software-evolution/scripts/check_checkpoint_drift.py \
+            software-evolution/scripts/validate_run_completion.py
       - name: Validate project config template
         run: |
           python software-evolution/scripts/validate_project_config.py \
             --config software-evolution/memory/software-evolution.config.template.yml --json
+      - name: Validate Run completion template
+        run: |
+          python software-evolution/scripts/validate_run_completion.py \
+            --run software-evolution/templates/autopilot-run.md --json
       - name: Validate Skill structure and contracts
         run: python software-evolution/scripts/check_skill_integrity.py
       - name: Run repository tests

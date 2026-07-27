@@ -13,6 +13,7 @@ SKILL = ROOT / "software-evolution"
 BOOTSTRAP = SKILL / "scripts" / "bootstrap_project_memory.py"
 INTEGRITY = SKILL / "scripts" / "check_skill_integrity.py"
 VALIDATOR = SKILL / "scripts" / "validate_project_config.py"
+RUN_VALIDATOR = SKILL / "scripts" / "validate_run_completion.py"
 INSTALLER = ROOT / "install.py"
 
 
@@ -154,6 +155,7 @@ class RepositoryTests(unittest.TestCase):
             self.assertTrue((copy_target / "workflows" / "autopilot.md").is_file())
             self.assertTrue((copy_target / "workflows" / "overnight.md").is_file())
             self.assertTrue((copy_target / "scripts" / "check_checkpoint_drift.py").is_file())
+            self.assertTrue((copy_target / "scripts" / "validate_run_completion.py").is_file())
             self.assertFalse(any(path.name == "__pycache__" for path in copy_target.rglob("*")))
             self.assertFalse(any(path.suffix == ".pyc" for path in copy_target.rglob("*")))
 
@@ -162,18 +164,34 @@ class RepositoryTests(unittest.TestCase):
         match = re.search(r"<!--\s*software-evolution-run\s*(\{.*?\})\s*-->", template, re.DOTALL)
         self.assertIsNotNone(match)
         metadata = json.loads(match.group(1))
-        self.assertEqual(2, metadata["schema_version"])
+        self.assertEqual(3, metadata["schema_version"])
         self.assertEqual("RUN-TBD", metadata["run_id"])
+        self.assertEqual("repository", metadata["scope_kind"])
+        self.assertEqual(["."], metadata["scope_paths"])
         self.assertIn("latest_batch_id", metadata)
         self.assertNotIn("window_index", metadata)
         self.assertIn("predecessor_run_id", metadata)
         self.assertEqual("INV-TBD", metadata["invocation_id"])
         self.assertEqual("", metadata["host_deadline"])
         self.assertEqual("ISO-8601-TBD", metadata["last_heartbeat_at"])
+        self.assertEqual("", metadata["terminal_reason"])
+        self.assertEqual(
+            {
+                "user_business",
+                "engineering_reliability",
+                "architecture_evolution",
+                "runtime_ux",
+                "cross_lane_challenge",
+                "open_repair_ready_work",
+            },
+            set(metadata["coverage"]),
+        )
         for heading in (
             "## Continuity state",
             "## Execution metrics",
             "## Checkpoint ledger",
+            "## Governance coverage matrix",
+            "## Completion challenge",
         ):
             self.assertIn(heading, template)
         self.assertIn("Counts are telemetry only", template)
@@ -182,6 +200,13 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn("Legacy quota caused this stop: `must be no`", template)
         self.assertNotIn("Session hard budget", template)
         self.assertNotIn("Verification floor minutes", template)
+        validated = subprocess.run(
+            ["python3", str(RUN_VALIDATOR), "--run", str(SKILL / "templates" / "autopilot-run.md"), "--json"],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        self.assertEqual("OK", json.loads(validated.stdout)["status"])
 
     def test_skill_integrity_script(self) -> None:
         result = subprocess.run(

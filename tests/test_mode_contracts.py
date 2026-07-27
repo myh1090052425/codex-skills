@@ -61,7 +61,7 @@ class ModeContractTests(unittest.TestCase):
         )
         self.assertIn("execute [init.md](init.md) automatically", autopilot)
         self.assertIn("continue in the same run", autopilot)
-        self.assertIn("immediately select the next safe root cause", autopilot)
+        self.assertIn("immediately select the next globally highest-value safe root cause", autopilot)
 
     def test_continuous_modes_use_continuous_write_contract(self) -> None:
         for mode in ("autopilot", "overnight", "deep"):
@@ -113,11 +113,12 @@ class ModeContractTests(unittest.TestCase):
         autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
         self.assertIn("## Real stop conditions", autopilot)
         for phrase in (
-            "No additional actionable, repair-ready finding remains",
-            "All remaining work requires unresolved business authority",
-            "specialist capability, or protected external action",
-            "Drift or overlapping user work makes every available batch unsafe",
-            "The host interrupts, rate-limits, suspends, or ends the task",
+            "Do not infer `safe work exhausted` from the current search query or taxonomy",
+            "user/business, engineering/reliability, and architecture/evolution coverage",
+            "open_repair_ready_work=false",
+            "validate_run_completion.py",
+            "Use `partial`, `blocked`, or `interrupted` instead",
+            "the host interrupts, rate-limits, suspends, or ends the task",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, autopilot)
@@ -189,6 +190,64 @@ class ModeContractTests(unittest.TestCase):
             "UNKNOWN",
         ):
             self.assertIn(classification, resume)
+
+    def test_default_run_scope_does_not_collapse_to_current_cluster(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        common = (SKILL / "workflows" / "common-loop.md").read_text(encoding="utf-8")
+        coverage = (SKILL / "governance" / "coverage-and-completion.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("scope_kind=repository", autopilot)
+        self.assertIn("later Batch scopes must not replace the parent scope", autopilot)
+        self.assertIn("current defect family does not become the implicit Run scope", common)
+        self.assertIn("Completing it never shrinks the parent run", coverage)
+
+    def test_autopilot_completion_requires_cross_lane_challenge(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        common = (SKILL / "workflows" / "common-loop.md").read_text(encoding="utf-8")
+        run_template = (SKILL / "templates" / "autopilot-run.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Cross-lane completion challenge", autopilot)
+        self.assertIn("outside the current module/taxonomy/test pattern", autopilot)
+        self.assertIn("counterexample search outside the current module/taxonomy/test pattern", common)
+        self.assertIn("## Completion challenge", run_template)
+        self.assertIn("validate_run_completion.py", run_template)
+
+    def test_runnable_ui_requires_browser_evidence_before_completion(self) -> None:
+        ux = (SKILL / "governance" / "user-experience.md").read_text(encoding="utf-8")
+        coverage = (SKILL / "governance" / "coverage-and-completion.md").read_text(
+            encoding="utf-8"
+        )
+        common = (SKILL / "workflows" / "common-loop.md").read_text(encoding="utf-8")
+        self.assertIn("Browser/runtime evidence is a completion gate", ux)
+        self.assertIn("Static source review", coverage)
+        self.assertIn("component tests alone are insufficient", common)
+
+    def test_host_goal_completion_is_bound_to_run_validator(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        unattended = (SKILL / "governance" / "unattended-execution.md").read_text(
+            encoding="utf-8"
+        )
+        common = (SKILL / "workflows" / "common-loop.md").read_text(encoding="utf-8")
+        self.assertIn("bind it to the active `RUN-*`", autopilot)
+        self.assertIn("Do not mark that goal complete", unattended)
+        self.assertIn("Do not mark a host durable goal complete", common)
+
+    def test_control_plane_is_proportional_and_verification_can_be_reused(self) -> None:
+        coverage = (SKILL / "governance" / "coverage-and-completion.md").read_text(
+            encoding="utf-8"
+        )
+        common = (SKILL / "workflows" / "common-loop.md").read_text(encoding="utf-8")
+        self.assertIn("## Proportional control plane", coverage)
+        self.assertIn("A small R1 repair may use a concise Run row", coverage)
+        self.assertIn("matching command/environment/revision/input/dependency fingerprints", common)
+
+    def test_single_defect_family_exhaustion_is_not_safe_work_exhausted(self) -> None:
+        autopilot = (SKILL / "workflows" / "autopilot.md").read_text(encoding="utf-8")
+        common = (SKILL / "workflows" / "common-loop.md").read_text(encoding="utf-8")
+        self.assertIn("exhaustion of the current defect family is never a stop condition", autopilot)
+        self.assertIn("one exhausted taxonomy", common)
 
     def test_verify_can_independently_accept_run_or_batch(self) -> None:
         verify = (SKILL / "workflows" / "verify.md").read_text(encoding="utf-8")

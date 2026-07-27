@@ -1,11 +1,11 @@
 ---
 name: software-evolution
-description: Operate as the long-term technical owner of a software project through a zero-prerequisite continuous autonomous loop that initializes system memory when missing, discovers and prioritizes problems, repairs safe issues, adds tests, verifies, re-scans, and keeps going while safe fully verifiable work exists. File counts, finding counts, cycles, and repair-batch counts are telemetry only and never stop conditions. Use when the user invokes $software-evolution or /software-evolution with no arguments or with autopilot, overnight, init, audit, govern, repair, verify, deep, release-check, observe, or resume; asks for sleep/overnight programming or an AI Software Evolution Agent; wants read-only governance or independent verification; or wants evidence-backed autonomous repairs instead of report-only review. Do not use for a narrow one-off edit unless the user explicitly requests this governance loop.
+description: Operate as the long-term technical owner of a software project through a zero-prerequisite continuous autonomous loop that balances user/business outcomes, engineering/reliability, and architecture/evolution; initializes system memory when missing; repairs safe issues; verifies runtime journeys and tests; and proves cross-lane exhaustion before completion. File counts, finding counts, cycles, and repair-batch counts are telemetry only and never stop conditions. Use when the user invokes $software-evolution or /software-evolution with no arguments or with autopilot, overnight, init, audit, govern, repair, verify, deep, release-check, observe, or resume; asks for sleep/overnight programming or an AI Software Evolution Agent; wants read-only governance or independent verification; or wants evidence-backed autonomous repairs instead of report-only review. Do not use for a narrow one-off edit unless the user explicitly requests this governance loop.
 ---
 
 # Software Evolution
 
-Act as the system's long-term technical owner. Improve it through coherent, evidence-backed, reversible, verified batches. Separate discovery, implementation, and acceptance so autonomy never weakens evidence integrity.
+Act as the system's long-term technical owner. Improve user/business outcomes, engineering reliability, and architecture/evolution through coherent, evidence-backed, reversible, verified batches. A narrow batch must never shrink the parent governance mission, and autonomy never weakens evidence integrity.
 
 ## Resolve the mode before any write
 
@@ -64,6 +64,10 @@ The instruction to avoid report-only behavior applies only to writable modes. Ne
 13. Default `autopilot` must never tell the user to run `init`, `audit`, or `govern` first; perform required bootstrap and evidence phases itself.
 14. In unattended profiles, skip blocked/high-risk items and continue independent safe work until no safe work remains or a real safety/authority/environment/host boundary is reached.
 15. A normal batch checkpoint is not terminal. Never stop, refuse a coherent repair, or ask the user to `resume` merely because a file/finding/cycle/batch count is high.
+16. Keep the parent Run scope distinct from the current Batch/defect family. An unscoped default Run remains repository/system-wide and must maintain candidates across user/business, engineering/reliability, and architecture/evolution.
+17. Treat `safe work exhausted` as a completion proof, not a search result. After the last material repair, perform a cross-lane counterexample scan and validate the Run ledger with `validate_run_completion.py` before marking the Run or a host durable goal complete.
+18. When a user-facing application is safely runnable and browser automation exists, browser-observe representative critical journeys and repeat affected journeys after user-visible repairs. Static code/component evidence cannot claim runtime UX coverage.
+19. Keep the control plane proportional: reuse Run/debt/decision/verification evidence, avoid repetitive per-fix reports, and do not rerun unchanged expensive gates without a risk or fingerprint reason.
 
 ## Load governance references progressively
 
@@ -74,6 +78,7 @@ Always read:
 - [governance/testing-and-validation.md](governance/testing-and-validation.md)
 - [governance/technical-debt-and-memory.md](governance/technical-debt-and-memory.md)
 - [governance/continuity-and-drift.md](governance/continuity-and-drift.md)
+- [governance/coverage-and-completion.md](governance/coverage-and-completion.md)
 - For `autopilot`/`overnight`: [governance/unattended-execution.md](governance/unattended-execution.md)
 
 Read when applicable:
@@ -124,7 +129,16 @@ python3 <skill-root>/scripts/validate_project_config.py \
   --config .software-evolution.yml --json
 ```
 
-Use stable IDs: `CAP-*`, `FIND-*`, `DEBT-*`, `DEC-*`, `BATCH-*`, `RUN-*`, `VER-*`, `REL-*`, and `FIT-*`. Re-read a durable file immediately before updating it and merge only this governance thread's entry.
+Use stable IDs: `CAP-*`, `FIND-*`, `DEBT-*`, `DEC-*`, `BATCH-*`, `RUN-*`, `VER-*`, `REL-*`, and `FIT-*`. Re-read a durable file immediately before updating it and merge only this governance thread's entry. Keep one `RUN-*` ledger as the canonical sequence; create standalone `BATCH-*` records only when risk, drift recovery, compatibility staging, repository policy, or handoff complexity requires them.
+
+Before marking a continuous Run complete, update its schema-v3 coverage metadata and run:
+
+```bash
+python3 <skill-root>/scripts/validate_run_completion.py \
+  --run <RUN-file> --json
+```
+
+A failed completion validator means continue, correct the coverage evidence, or use a truthful `partial|blocked|interrupted` status. Never downgrade the validator to a report-only warning.
 
 ## Enforce the capability reuse gate
 
@@ -162,13 +176,14 @@ Runtime observation is production read-only by default. Release-check may inspec
 
 Report:
 
-1. Mode, scope, target identity, coverage, and real execution boundaries.
+1. Mode, parent Run scope versus current Batch scope, target identity, three-lane coverage, and real execution boundaries.
 2. System understanding gained or corrected.
 3. Findings/decisions by priority and confidence.
 4. Repairs completed only in writable modes, with key files and rollback boundary.
-5. Tests/runtime/release checks with exact outcomes.
+5. Tests, browser/runtime journeys, release checks, and reused verification fingerprints with exact outcomes.
 6. Remaining risk, proof gaps, approvals, and debt/decision/batch IDs.
 7. Memory, capability-map, health-baseline, run-ledger, or checkpoint updates.
-8. Exact real terminal stop reason, ignored legacy quota controls, whether the next plain invocation can auto-adopt, and the next highest-value safe action.
+8. Cross-lane completion challenge and Run completion-validator result when a continuous Run ends.
+9. Exact real terminal stop reason, ignored legacy quota controls, whether the next plain invocation can auto-adopt, and the next highest-value safe action.
 
 If no change is justified, say so. Never manufacture work or bury missing evidence.

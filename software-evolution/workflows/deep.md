@@ -6,14 +6,14 @@ Perform repository-wide or scoped deep governance through coherent, verified rep
 
 ## Coverage contract
 
-Before scanning, declare:
+Read [../governance/coverage-and-completion.md](../governance/coverage-and-completion.md). Before scanning, declare:
 
-- Scope worklist and explicit exclusions.
+- Parent Run scope, semantic slices, and explicit exclusions.
 - Critical business flows, capability boundaries, runtime units, and evidence sources.
 - Verification strategy for each repair class.
 - Areas blocked by authority, environment, specialist capability, or protected operations.
 
-Never claim repository-wide completion when only a slice was reviewed. Continue to the next uncovered slice while safe verifiable work remains and the host is available.
+Never claim repository-wide completion when only a slice or one defect taxonomy was reviewed. Keep a three-lane coverage matrix and compare cross-lane candidates before deepening the same cluster. Continue to the next uncovered slice while safe verifiable work remains and the host is available.
 
 ## Stages
 
@@ -39,8 +39,8 @@ Create a ranked finding/debt set. Prefer enabling repairs such as characterizati
 
 ### 6. Re-scan, checkpoint, and continue
 
-After each wave, re-run affected inspections, update coverage and memory, and write a `BATCH-*` checkpoint using [../templates/batch-checkpoint.md](../templates/batch-checkpoint.md). Record counts as coverage telemetry. Continue to the next safe slice until coverage is complete, only blocked work remains, or the host ends the task.
+After each wave, re-run affected inspections, refresh all three lane targets, update changed memory, and checkpoint in the canonical Run ledger. Create a standalone `BATCH-*` only when risk, drift, compatibility, repository policy, or handoff complexity requires it. Record counts as coverage telemetry. Continue until the Run completion proof passes, a truthful blocking status applies, or the host ends the task.
 
 ## Completion language
 
-Report with [../templates/governance-report.md](../templates/governance-report.md). Say `slice complete`, not `repository clean`, unless every declared repository-wide surface was covered with trustworthy evidence. Persist the next worklist slice when host interruption prevents completion.
+Report with [../templates/governance-report.md](../templates/governance-report.md). Say `slice complete`, not `repository clean`, unless every declared repository-wide lane was covered/blocked, runtime UX evidence was acquired where applicable, the outside-cluster completion challenge passed, no repair-ready work remains, and `validate_run_completion.py` returns `OK`. Persist the next worklist slice when host interruption prevents completion.

@@ -13,6 +13,8 @@ Evaluate whether real users can understand, complete, and recover from tasks—n
 
 State the evidence limitation when relying on lower-order evidence. Do not claim end-to-end UX quality from static code alone when the app can be run.
 
+Browser/runtime evidence is a completion gate for safely runnable user-facing applications. For an unscoped continuous Run, current browser evidence is a completion requirement, not an optional enhancement. Component tests and API schemas may verify implementation boundaries, but they cannot set Run `coverage.runtime_ux=covered` by themselves.
+
 ## Build the journey inventory
 
 For each critical actor, identify:
@@ -38,8 +40,9 @@ When browser automation is available:
 5. Inspect visible feedback, keyboard/focus behavior when relevant, console errors, failed requests, and stale UI state.
 6. Capture screenshots or traces for material visual/flow findings.
 7. In a writable mode, repeat the repaired flow after automated checks pass; read-only modes stop at evidence and handoff.
+8. Before a repository-wide `safe_work_exhausted` claim, traverse at least one representative critical journey after the last material user-facing repair and deliberately exercise a failure/recovery or permission boundary.
 
-Do not bypass authentication. If credentials are unavailable, test public flows and record the blocked authenticated coverage.
+If a user-visible repair is verified only by component/unit tests while the app is runnable, leave runtime UX `pending` and continue or record the exact browser blocker. Do not bypass authentication. If credentials are unavailable, test public flows and record the blocked authenticated coverage.
 
 ## Inspection checklist
 

@@ -24,11 +24,12 @@ scripts/                 # 低自由度、可测试的控制脚本
 ```text
 $software-evolution
 → Auto-bootstrap when missing
-→ Model / Inspect / Prove / Prioritize
+→ Establish a stable parent Run scope and three-lane candidate portfolio
+→ Model / Inspect / Prove / Prioritize across lanes
 → Repair / Test / Verify / Re-scan
-→ Write a recoverable semantic-batch checkpoint
-→ Continue the next safe fully verifiable batch
-→ Save RUN/BATCH state only on a real stop or host interruption
+→ Write a proportional recoverable checkpoint
+→ Continue the globally highest-value safe fully verifiable batch
+→ Prove cross-lane completion before a completed terminal state
 ```
 
 `overnight` 是更长的无人值守 Profile，使用隔离优先和 `RUN-*` 账本，在宿主保持可用且存在安全可验证工作时持续执行；文件、Finding、Cycle、Batch 和耗时仅作遥测。
@@ -64,6 +65,14 @@ Plan → Baseline → Repair → Verify → Re-scan → Remember → Checkpoint
 ```
 
 公共流程不再无条件包含 Repair。“不要只输出报告”仅适用于已选择可写模式且证据、风险、业务权威、可逆性和验证均满足的情况。
+
+### 4.1 覆盖控制与完成证明
+
+连续 Run 维护稳定的父范围和三主线候选组合：用户/业务、工程/可靠性、架构/演进。当前文件夹、Schema、错误类型或测试模式只是发现簇；Batch 可以窄，但不能把父 Run 缩成当前问题族。每次继续同一问题族前都要与另外两条主线的最强候选比较，避免因为易搜索、易测试或易 Patch 而陷入局部最优。
+
+对于可安全运行的用户界面，浏览器关键旅程是完成门禁，不是可选加分项。静态源码、组件测试或 HTTP 200 只能支持局部结论，不能宣布运行态 UX 已覆盖。
+
+`safe work exhausted` 使用 schema-v3 `RUN-*` 证明：最后一次实质修复后重新覆盖三主线，搜索当前模块/分类/测试模式之外的反例，核对开放债务、近期变化、能力重复、业务规则分裂、关键旅程与健康失败，并运行 `validate_run_completion.py`。失败时必须继续或记录真实 `partial|blocked|interrupted`，不能完成 Run 或宿主持久 Goal。
 
 ## 5. 三个核心治理方向
 
@@ -164,8 +173,8 @@ Feature Flag、Fallback、Adapter、兼容分支、Dual Write 必须记录原因
 - `technical-debt.md`：可验证债务生命周期。
 - `health-baseline.json`：质量门禁、关键流程、SLI/SLO、已知失败和观测缺口。
 - `decisions/DEC-*.md`：权威和选项。
-- `batches/BATCH-*.md`：可恢复批次和 Git 漂移元数据。
-- `runs/RUN-*.md`：Autopilot/Overnight 连续性、执行遥测、批次账本、真实停止原因和恢复入口。
+- `batches/BATCH-*.md`：仅在风险、漂移恢复、兼容分阶段、仓库规则或复杂交接需要时保存独立批次元数据。
+- `runs/RUN-*.md`：连续治理的权威账本，保存稳定父范围、三主线覆盖、运行态 UX、跨主线挑战、验证指纹、真实停止原因和恢复入口。
 - `reports/`：Audit、Verification、Release、Observation 证据。
 
 稳定 ID 让 Finding、Decision、Repair、Verification、Release、Autopilot 和 Resume 共享一个长期上下文。
@@ -203,7 +212,7 @@ Runtime Finding 必须记录环境、版本、窗口、过滤条件、样本/事
 
 `autopilot` 是默认零前置多批循环；`overnight` 在其上增加隔离优先和持久 `RUN-*` 连续性账本。每次调用本身只授权配置允许的可逆 R1/R2 源码、测试和治理文件修改，不授权生产、部署、远端发布或 R3/R4 受保护操作。
 
-无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。每个语义批次完成验证和 Checkpoint 后立即选择下一项；文件数、Finding、Cycle、Batch 和耗时只作遥测。只有无安全工作、权威/审批/证据/环境/专项能力全部阻塞、受保护边界、冲突漂移、所有候选假设隔离，或 Host 中断/挂起/限流/结束时才形成真实终止。
+无人值守运行不等待宽泛决策：生成 `DEC-*`/Specialist Handoff，跳过被阻塞项并选择其他独立工作。每个语义批次完成验证和比例化 Checkpoint 后刷新三主线候选并立即选择下一项；文件数、Finding、Cycle、Batch 和耗时只作遥测。单一问题族耗尽不是完成。只有跨主线完成证明通过、全部剩余工作真实阻塞，或 Host 中断/挂起/限流/结束时才形成终态；普通 Checkpoint 不能完成宿主持久 Goal。
 
 ## 14. 连续执行、Checkpoint 与恢复
 
@@ -211,7 +220,7 @@ Runtime Finding 必须记录环境、版本、窗口、过滤条件、样本/事
 
 批次边界是语义边界：一个根因、业务能力、不变量、契约边界或兼容阶段。文件数、Diff 大小、Finding 数、Cycle、Batch 数和耗时只作 Blast Radius、覆盖、趋势和恢复遥测，不得制造硬停止、重置权限或要求用户重复发命令。大范围修改通过更强的调用方分析、回滚和验证来控制，而不是通过任意文件上限控制。
 
-Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、变更遥测、invocation owner/heartbeat、最后门禁、决定/批准和下一步。默认启动可在 Drift、权威和最后门禁校验后自动接管唯一、非活跃且安全可恢复的宿主中断或旧配额型 `partial`；另一个活跃 owner 的重叠 branch/scope 禁止接管和并发新建。显式 `resume` 分类：
+`RUN-*` 是权威连续账本，小型 R1 可以只增加 Run 行并复用 Finding/Debt/Verification 证据；只有风险、漂移恢复、兼容分阶段、仓库规则或复杂交接需要时才创建独立 `BATCH-*`。Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、模式、风险、变更遥测、invocation owner/heartbeat、最后门禁、决定/批准和下一步。默认启动可在 Drift、权威和最后门禁校验后自动接管唯一、非活跃且安全可恢复的宿主中断或旧配额型 `partial`；另一个活跃 owner 的重叠 branch/scope 禁止接管和并发新建。显式 `resume` 分类：
 
 - `NO_DRIFT`
 - `SAFE_DRIFT`
@@ -219,12 +228,12 @@ Checkpoint 记录 branch、HEAD、worktree fingerprint/entries、scope paths、�
 - `CONFLICTING_DRIFT`
 - `UNKNOWN`
 
-只有 No Drift 和经确认的 Safe Drift 能直接继续。真实停止条件是：安全工作耗尽；权威/审批/证据/环境/专项能力阻塞；受保护外部操作或 R3/R4 决策；冲突漂移；所有候选修复假设被隔离；或宿主中断、挂起、限流、结束。
+只有 No Drift 和经确认的 Safe Drift 能直接继续。真实停止条件必须准确落入完成、阻塞或中断语义：`completed` 要求三主线与运行态 UX 覆盖、簇外反例挑战、开放工作核对和 Run Validator 全部通过；否则真实停止状态是 `partial`、`blocked` 或 `interrupted`。宿主中断、挂起、限流或结束是中断，不得伪装成完成。
 
 ## 15. 自动修改安全与验收完整性
 
 写入必须同时满足 Mode、Risk、Authority、Reversibility、Verification 五个 Gate。R3 使用兼容性分阶段方案，R4 在操作点显式批准。
 
-`verify` 从 Artifact 和权威验收标准重新建模，不接受实现者的自证。失败时保持只读并输出 Repair Handoff。
+`verify` 从 Artifact 和权威验收标准重新建模，不接受实现者的自证。失败时保持只读并输出 Repair Handoff。昂贵验证仅能在命令、环境、Revision、输入、依赖和受影响路径指纹一致时复用。
 
 同一修复假设连续失败三次后隔离该假设并重新建模，不能盲目第四次修改；若仍有其他独立安全工作，治理循环继续。修改未达到风险所需测试、运行或观察证据时只能标记 `partial`、`failed` 或 `blocked`。

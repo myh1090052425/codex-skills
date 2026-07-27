@@ -71,6 +71,7 @@ Every `ready` item needs root cause, evidence/scope, impact, remediation, compat
 - Decision records preserve authority, options, consequences, approval scope, and supersession.
 - Batch checkpoints preserve target identity, mode, drift metadata, change telemetry, verification, approvals, and next safe action.
 - Reports preserve detailed evidence without bloating architecture memory.
+- The parent `RUN-*` ledger is the canonical continuous sequence. Do not create a new report or standalone `BATCH-*` when an existing Run/finding/debt/decision/verification record can preserve the evidence without ambiguity. Control-plane polish must not displace higher-value product evidence or repair work.
 
 ## Concurrent updates
 
